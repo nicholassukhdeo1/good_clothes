@@ -5,7 +5,13 @@ from fastapi.middleware.cors import CORSMiddleware
 import cache
 import research
 import synthesize
-from models import ResearchRequest, ResearchResponse
+import alternatives
+from models import (
+    ResearchRequest,
+    ResearchResponse,
+    AlternativesRequest,
+    AlternativesResponse,
+)
 
 app = FastAPI(title="good_clothes")
 
@@ -43,4 +49,22 @@ def research_brand(req: ResearchRequest):
     result["cached"] = False
 
     cache.put(brand, result)
+    return result
+
+
+@app.post("/alternatives", response_model=AlternativesResponse)
+def alternatives_for(req: AlternativesRequest):
+    brand = req.brand.strip()
+    category = alternatives.infer_category(req.title)
+    key = f"alt::{brand.lower()}::{category}"  # namespaced so it can't collide with /research
+
+    hit = cache.get(key)
+    if hit:
+        hit["cached"] = True
+        return hit
+
+    result = alternatives.suggest_alternatives(brand, req.title, req.score, req.composition)
+    result["cached"] = False
+
+    cache.put(key, result)
     return result

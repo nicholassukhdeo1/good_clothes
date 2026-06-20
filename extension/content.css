@@ -41,3 +41,38 @@
 #gc-badge .gc-src { margin-top: 6px; font-size: 11px; }
 #gc-badge .gc-src a { color: #1a73e8; text-decoration: none; }
 #gc-badge .gc-src a:hover { text-decoration: underline; }
+
+#gc-badge .gc-alts {
+  margin-top: 10px;
+  padding-top: 8px;
+  border-top: 1px solid #ececec;
+}
+#gc-badge .gc-alts-h {
+  font-weight: 700;
+  font-size: 11px;
+  color: #1e8e3e;
+  margin-bottom: 6px;
+}
+#gc-badge .gc-alt {
+  margin-bottom: 6px;
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: baseline;
+  column-gap: 6px;
+}
+#gc-badge .gc-alt a {
+  color: #202124;
+  font-weight: 600;
+  text-decoration: none;
+}
+#gc-badge .gc-alt a:hover { text-decoration: underline; }
+#gc-badge .gc-alt-score {
+  font-weight: 700;
+  font-size: 11px;
+  color: #1e8e3e;
+}
+#gc-badge .gc-alt-why {
+  grid-column: 1 / -1;
+  color: #5f6368;
+  font-size: 11px;
+}

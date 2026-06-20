@@ -68,9 +68,29 @@ function colorFor(score) {
   return "#d93025";
 }
 
+// Below this overall score, we nudge the shopper toward better options.
+const ALT_THRESHOLD = 60;
+
+function altsHtml(alts) {
+  if (!alts) return "";
+  if (alts.loading) return `<div class="gc-alts"><div class="gc-alts-h">Finding better options…</div></div>`;
+  if (!alts.alternatives || !alts.alternatives.length) return "";
+  const rows = alts.alternatives
+    .map(
+      (a) =>
+        `<div class="gc-alt">` +
+        `<a href="${a.url}" target="_blank">${a.name}</a>` +
+        `<span class="gc-alt-score">${a.est_score}</span>` +
+        (a.why ? `<div class="gc-alt-why">${a.why}</div>` : "") +
+        `</div>`
+    )
+    .join("");
+  return `<div class="gc-alts"><div class="gc-alts-h">⚠ Better ${alts.category || "options"}</div>${rows}</div>`;
+}
+
 function renderBadge(state) {
   const el = ensureBadge();
-  const { materials, research, final, phase } = state;
+  const { materials, research, final, phase, alternatives } = state;
   const big = final != null ? final : materials && materials.score != null ? materials.score : "…";
   const ring = colorFor(typeof big === "number" ? big : null);
 
@@ -108,6 +128,7 @@ function renderBadge(state) {
       ${ownLine ? `<div class="gc-row">${ownLine}</div>` : ""}
       ${research && research.summary ? `<div class="gc-sum">${research.summary}</div>` : ""}
       ${sources}
+      ${altsHtml(alternatives)}
     </div>`;
 }
 
@@ -124,8 +145,25 @@ function run() {
     }
     const matScore = mat.score != null ? mat.score : 50; // fallback weight if fabric unreadable
     const final = Math.round(0.4 * matScore + 0.4 * res.ethics_score + 0.2 * res.ownership_score);
-    renderBadge({ phase: "done", materials: mat, research: res, final });
     chrome.storage.local.set({ gc_last: { materials: mat, research: res, final, url: data.url } });
+
+    if (final >= ALT_THRESHOLD) {
+      renderBadge({ phase: "done", materials: mat, research: res, final });
+      return;
+    }
+
+    // Low score → this is the money shot: show better buys.
+    renderBadge({ phase: "done", materials: mat, research: res, final, alternatives: { loading: true } });
+    chrome.runtime.sendMessage(
+      { type: "ALTERNATIVES", brand: data.brand, title: data.title, score: final, composition: data.composition },
+      (alt) => {
+        const alternatives = chrome.runtime.lastError || !alt || alt.error ? null : alt;
+        renderBadge({ phase: "done", materials: mat, research: res, final, alternatives });
+        if (alternatives) {
+          chrome.storage.local.set({ gc_last: { materials: mat, research: res, final, alternatives, url: data.url } });
+        }
+      }
+    );
   });
 }
 
