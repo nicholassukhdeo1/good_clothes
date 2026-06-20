@@ -3,7 +3,9 @@
 // Route every network call through here. This is the single most common extension
 // gotcha — get this round-trip working FIRST (Block 1).
 
-const BACKEND = "http://localhost:8000"; // TODO: swap for your deployed URL before the demo
+// Backend URL. Default = deployed (works on any machine). For local dev, flip to localhost.
+const BACKEND = "https://good-clothes-backend.onrender.com";
+// const BACKEND = "http://localhost:8000";
 
 // On first install, open the preferences page so the user picks a style lane.
 chrome.runtime.onInstalled.addListener((details) => {

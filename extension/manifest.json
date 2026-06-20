@@ -6,6 +6,7 @@
   "permissions": ["storage", "activeTab"],
   "host_permissions": [
     "*://*.ssense.com/*",
+    "https://good-clothes-backend.onrender.com/*",
     "http://localhost:8000/*"
   ],
   "background": { "service_worker": "background.js" },

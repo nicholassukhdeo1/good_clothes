@@ -36,8 +36,9 @@ window.GC_DEFAULT_PREF = "balanced";
 window.GC_PREF_LABEL = window.GC_PREFS.reduce((m, p) => ((m[p.key] = p.label), m), {});
 
 // Backend base — extension pages (onboarding/popup) hit /prefs directly; it's in
-// host_permissions so the fetch is allowed.
-window.GC_BACKEND = "http://localhost:8000";
+// host_permissions so the fetch is allowed. Default = deployed; flip to localhost for dev.
+window.GC_BACKEND = "https://good-clothes-backend.onrender.com";
+// window.GC_BACKEND = "http://localhost:8000";
 
 // A stable anonymous id per install, so the backend can key preferences without any
 // login. Generated once and kept in local storage.
