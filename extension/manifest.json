@@ -1,0 +1,22 @@
+{
+  "manifest_version": 3,
+  "name": "good_clothes",
+  "version": "0.1.0",
+  "description": "How worthy is this item to buy? A 0-100 score on materials, ethics, and ownership.",
+  "permissions": ["storage", "activeTab"],
+  "host_permissions": [
+    "*://*.uniqlo.com/*",
+    "http://localhost:8000/*"
+  ],
+  "background": { "service_worker": "background.js" },
+  "content_scripts": [
+    {
+      "// TODO": "Change matches to YOUR chosen retailer's product-page URL pattern.",
+      "matches": ["*://*.uniqlo.com/*/products/*"],
+      "js": ["materials.js", "content.js"],
+      "css": ["content.css"],
+      "run_at": "document_idle"
+    }
+  ],
+  "action": { "default_popup": "popup.html", "default_title": "good_clothes" }
+}
