@@ -51,6 +51,12 @@
   font-weight: 700;
   font-size: 11px;
   color: #1e8e3e;
+  margin-bottom: 2px;
+}
+#gc-badge .gc-alts-look {
+  font-size: 11px;
+  color: #5f6368;
+  font-style: italic;
   margin-bottom: 6px;
 }
 #gc-badge .gc-alt {

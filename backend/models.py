@@ -26,6 +26,7 @@ class AlternativesRequest(BaseModel):
     title: str = ""        # product page title — used to infer the category
     score: int = 0         # the item's overall good_clothes score, so we beat it
     composition: str = ""  # e.g. "100% cotton" — context for material upgrades
+    image: str = ""        # product image URL — Claude vision reads the look from it
 
 
 class Alternative(BaseModel):
@@ -37,5 +38,6 @@ class Alternative(BaseModel):
 
 class AlternativesResponse(BaseModel):
     category: str
+    look: str = ""         # the visual query Claude read from the photo
     alternatives: List[Alternative] = []
     cached: bool = False

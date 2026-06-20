@@ -41,10 +41,29 @@ function findComposition() {
   return best;
 }
 
+function findImage() {
+  // og:image is the canonical product photo on virtually every retailer (incl. SSENSE),
+  // and it's an absolute, publicly-fetchable URL — ideal to hand to Claude vision.
+  const og = document.querySelector('meta[property="og:image"]');
+  if (og && og.content) return og.content;
+  // fallback: the largest <img> on the page is almost always the product shot
+  let best = "";
+  let area = 0;
+  for (const img of document.querySelectorAll("img")) {
+    const a = (img.naturalWidth || 0) * (img.naturalHeight || 0);
+    if (a > area && img.src) {
+      area = a;
+      best = img.src;
+    }
+  }
+  return best;
+}
+
 function scrape() {
   return {
     brand: findBrand(),
     composition: findComposition(),
+    image: findImage(),
     title: document.title,
     url: location.href,
   };
@@ -85,7 +104,10 @@ function altsHtml(alts) {
         `</div>`
     )
     .join("");
-  return `<div class="gc-alts"><div class="gc-alts-h">⚠ Better ${alts.category || "options"}</div>${rows}</div>`;
+  const look = alts.look
+    ? `<div class="gc-alts-look">matching: ${alts.look}</div>`
+    : "";
+  return `<div class="gc-alts"><div class="gc-alts-h">⚠ Better ${alts.category || "options"}</div>${look}${rows}</div>`;
 }
 
 function renderBadge(state) {
@@ -155,7 +177,7 @@ function run() {
     // Low score → this is the money shot: show better buys.
     renderBadge({ phase: "done", materials: mat, research: res, final, alternatives: { loading: true } });
     chrome.runtime.sendMessage(
-      { type: "ALTERNATIVES", brand: data.brand, title: data.title, score: final, composition: data.composition },
+      { type: "ALTERNATIVES", brand: data.brand, title: data.title, score: final, composition: data.composition, image: data.image },
       (alt) => {
         const alternatives = chrome.runtime.lastError || !alt || alt.error ? null : alt;
         renderBadge({ phase: "done", materials: mat, research: res, final, alternatives });

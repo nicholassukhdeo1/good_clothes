@@ -63,7 +63,9 @@ def alternatives_for(req: AlternativesRequest):
         hit["cached"] = True
         return hit
 
-    result = alternatives.suggest_alternatives(brand, req.title, req.score, req.composition)
+    result = alternatives.suggest_alternatives(
+        brand, req.title, req.score, req.composition, req.image
+    )
     result["cached"] = False
 
     cache.put(key, result)
