@@ -61,7 +61,8 @@ def alternatives_for(req: AlternativesRequest):
     # Key on the image too: alternatives are matched to THIS item's look, so two items
     # of the same brand+category (different colors/photos) must not share a cache entry.
     img_key = hashlib.sha1(req.image.encode("utf-8")).hexdigest()[:10] if req.image else "noimg"
-    key = f"alt::{brand.lower()}::{category}::{img_key}"  # namespaced; can't collide with /research
+    # pref is part of the key: the same item under a different style lane is a different result.
+    key = f"alt::{brand.lower()}::{category}::{req.pref}::{img_key}"  # namespaced; can't collide with /research
 
     hit = cache.get(key)
     if hit:
@@ -69,7 +70,7 @@ def alternatives_for(req: AlternativesRequest):
         return hit
 
     result = alternatives.suggest_alternatives(
-        brand, req.title, req.score, req.composition, req.image
+        brand, req.title, req.score, req.composition, req.image, req.pref
     )
     result["cached"] = False
 

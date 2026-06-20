@@ -1,4 +1,11 @@
-// popup.js — shows the last score the content script stored.
+// popup.js — shows the last score the content script stored + the current style lane.
+chrome.storage.sync.get({ gc_pref: window.GC_DEFAULT_PREF }, ({ gc_pref }) => {
+  document.getElementById("pref").textContent = window.GC_PREF_LABEL[gc_pref] || gc_pref;
+});
+document.getElementById("change").addEventListener("click", () => {
+  chrome.tabs.create({ url: chrome.runtime.getURL("onboarding.html") });
+});
+
 chrome.storage.local.get("gc_last", ({ gc_last }) => {
   const out = document.getElementById("out");
   if (!gc_last) return;

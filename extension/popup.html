@@ -7,11 +7,16 @@
       h1 { font-size: 14px; margin: 0 0 8px; }
       #out { color: #3c4043; }
       .muted { color: #80868b; }
+      .pref-row { margin-top: 12px; padding-top: 10px; border-top: 1px solid #ececec; font-size: 12px; color: #5f6368; }
+      .pref-row a { color: #1a73e8; text-decoration: none; cursor: pointer; }
+      .pref-row a:hover { text-decoration: underline; }
     </style>
   </head>
   <body>
     <h1>good_clothes</h1>
     <div id="out" class="muted">Open a supported product page to see a score.</div>
+    <div class="pref-row">Style: <b id="pref">…</b> · <a id="change">change</a></div>
+    <script src="prefs.js"></script>
     <script src="popup.js"></script>
   </body>
 </html>

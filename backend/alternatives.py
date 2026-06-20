@@ -47,6 +47,30 @@ _CATEGORIES = [
 ]
 
 
+# Style lanes the user picks during onboarding. Keys MUST match extension/prefs.js.
+# Each phrase is injected into the prompt to bias WHICH better brands get suggested —
+# the ethics/quality bar stays; only the taste/price target shifts.
+PREF_GUIDANCE = {
+    "balanced": "Pick the best overall more-conscious options across any price point.",
+    "avant_garde": (
+        "Strongly favor avant-garde, high-fashion designer labels — the kind i-D or Vogue "
+        "feature (e.g. Rick Owens, Lemaire, Yohji Yamamoto, Acne Studios) — prized for "
+        "craftsmanship and longevity."
+    ),
+    "affordable": (
+        "Strongly favor affordable, widely-available brands at mass-market price points "
+        "(the kind a shopper finds easily online) that are still clearly more ethical or "
+        "durable than the original item."
+    ),
+    "streetwear": "Strongly favor elevated, more-sustainable streetwear labels.",
+    "minimal": "Strongly favor minimal, timeless labels known for durable, long-lasting basics.",
+}
+
+
+def pref_guidance(pref: str) -> str:
+    return PREF_GUIDANCE.get(pref, PREF_GUIDANCE["balanced"])
+
+
 def infer_category(title: str) -> str:
     t = (title or "").lower()
     for name, kws in _CATEGORIES:
@@ -84,13 +108,16 @@ def _search_url(brand: str, query: str) -> str:
     return f"https://www.google.com/search?tbm=shop&q={quote_plus(f'{brand} {query}')}"
 
 
-def suggest_alternatives(brand: str, title: str, score: int, composition: str, image: str = "") -> dict:
+def suggest_alternatives(
+    brand: str, title: str, score: int, composition: str, image: str = "", pref: str = "balanced"
+) -> dict:
     category = infer_category(title)
     prompt = (
         f"Original item: {brand} {category}\n"
         f"Composition: {composition or 'unknown'}\n"
-        f"It scored {score}/100 on conscious-consumption (materials + ethics + ownership). "
-        f"Describe the look and suggest 3 better brands for this category."
+        f"It scored {score}/100 on conscious-consumption (materials + ethics + ownership).\n"
+        f"Style preference: {pref_guidance(pref)}\n"
+        f"Describe the look and suggest 3 better brands for this category that fit the preference."
     )
 
     # Vision when we have a photo, text-only otherwise — same call either way.

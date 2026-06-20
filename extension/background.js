@@ -5,6 +5,13 @@
 
 const BACKEND = "http://localhost:8000"; // TODO: swap for your deployed URL before the demo
 
+// On first install, open the preferences page so the user picks a style lane.
+chrome.runtime.onInstalled.addListener((details) => {
+  if (details.reason === "install") {
+    chrome.tabs.create({ url: chrome.runtime.getURL("onboarding.html") });
+  }
+});
+
 // Single relay for both endpoints — content.js picks the path via msg.type.
 const ROUTES = {
   RESEARCH: (m) => ["/research", { brand: m.brand }],

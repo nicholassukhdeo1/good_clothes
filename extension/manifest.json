@@ -12,7 +12,7 @@
   "content_scripts": [
     {
       "matches": ["*://*.ssense.com/*/product/*"],
-      "js": ["materials.js", "content.js"],
+      "js": ["prefs.js", "materials.js", "content.js"],
       "css": ["content.css"],
       "run_at": "document_idle"
     }

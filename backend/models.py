@@ -27,6 +27,7 @@ class AlternativesRequest(BaseModel):
     score: int = 0         # the item's overall good_clothes score, so we beat it
     composition: str = ""  # e.g. "100% cotton" — context for material upgrades
     image: str = ""        # product image URL — Claude vision reads the look from it
+    pref: str = "balanced" # user's style lane (set in onboarding) — biases brand picks
 
 
 class Alternative(BaseModel):

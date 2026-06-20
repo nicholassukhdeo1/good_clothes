@@ -107,7 +107,8 @@ function altsHtml(alts) {
   const look = alts.look
     ? `<div class="gc-alts-look">matching: ${alts.look}</div>`
     : "";
-  return `<div class="gc-alts"><div class="gc-alts-h">⚠ Better ${alts.category || "options"}</div>${look}${rows}</div>`;
+  const lane = alts.prefLabel ? ` · ${alts.prefLabel}` : "";
+  return `<div class="gc-alts"><div class="gc-alts-h">⚠ Better ${alts.category || "options"}${lane}</div>${look}${rows}</div>`;
 }
 
 function renderBadge(state) {
@@ -155,7 +156,7 @@ function renderBadge(state) {
 }
 
 // ---------- 3. MAIN ----------
-function run() {
+function run(pref) {
   const data = scrape();
   const mat = window.GC_scoreMaterials(data.composition);
   renderBadge({ phase: "loading", materials: mat });
@@ -177,9 +178,10 @@ function run() {
     // Low score → this is the money shot: show better buys.
     renderBadge({ phase: "done", materials: mat, research: res, final, alternatives: { loading: true } });
     chrome.runtime.sendMessage(
-      { type: "ALTERNATIVES", brand: data.brand, title: data.title, score: final, composition: data.composition, image: data.image },
+      { type: "ALTERNATIVES", brand: data.brand, title: data.title, score: final, composition: data.composition, image: data.image, pref },
       (alt) => {
         const alternatives = chrome.runtime.lastError || !alt || alt.error ? null : alt;
+        if (alternatives) alternatives.prefLabel = window.GC_PREF_LABEL[pref] || "";
         renderBadge({ phase: "done", materials: mat, research: res, final, alternatives });
         if (alternatives) {
           chrome.storage.local.set({ gc_last: { materials: mat, research: res, final, alternatives, url: data.url } });
@@ -189,4 +191,5 @@ function run() {
   });
 }
 
-run();
+// Load the user's style lane (set during onboarding), then score the page.
+chrome.storage.sync.get({ gc_pref: window.GC_DEFAULT_PREF }, ({ gc_pref }) => run(gc_pref));
