@@ -1,4 +1,6 @@
 # main.py — run with:  uvicorn main:app --reload  (from inside backend/)
+import hashlib
+
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
@@ -56,7 +58,10 @@ def research_brand(req: ResearchRequest):
 def alternatives_for(req: AlternativesRequest):
     brand = req.brand.strip()
     category = alternatives.infer_category(req.title)
-    key = f"alt::{brand.lower()}::{category}"  # namespaced so it can't collide with /research
+    # Key on the image too: alternatives are matched to THIS item's look, so two items
+    # of the same brand+category (different colors/photos) must not share a cache entry.
+    img_key = hashlib.sha1(req.image.encode("utf-8")).hexdigest()[:10] if req.image else "noimg"
+    key = f"alt::{brand.lower()}::{category}::{img_key}"  # namespaced; can't collide with /research
 
     hit = cache.get(key)
     if hit:
