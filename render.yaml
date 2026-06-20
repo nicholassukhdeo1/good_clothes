@@ -1,0 +1,23 @@
+# render.yaml — Render Blueprint for the good_clothes backend.
+# In Render: New → Blueprint → connect this repo. Render reads this file, creates the
+# service, then prompts you to fill in the secret env vars (they are NOT stored here).
+services:
+  - type: web
+    name: good-clothes-backend
+    runtime: python
+    rootDir: backend
+    plan: free
+    buildCommand: pip install -r requirements.txt
+    startCommand: uvicorn main:app --host 0.0.0.0 --port $PORT
+    envVars:
+      # sync:false => Render asks you to enter these in the dashboard (kept out of git).
+      - key: ANTHROPIC_API_KEY
+        sync: false
+      - key: BROWSERBASE_API_KEY
+        sync: false
+      - key: BROWSERBASE_PROJECT_ID
+        sync: false
+      - key: SUPABASE_URL
+        sync: false
+      - key: SUPABASE_KEY
+        sync: false
