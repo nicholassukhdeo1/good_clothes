@@ -5,14 +5,13 @@
   "description": "How worthy is this item to buy? A 0-100 score on materials, ethics, and ownership.",
   "permissions": ["storage", "activeTab"],
   "host_permissions": [
-    "*://*.uniqlo.com/*",
+    "*://*.ssense.com/*",
     "http://localhost:8000/*"
   ],
   "background": { "service_worker": "background.js" },
   "content_scripts": [
     {
-      "// TODO": "Change matches to YOUR chosen retailer's product-page URL pattern.",
-      "matches": ["*://*.uniqlo.com/*/products/*"],
+      "matches": ["*://*.ssense.com/*/product/*"],
       "js": ["materials.js", "content.js"],
       "css": ["content.css"],
       "run_at": "document_idle"

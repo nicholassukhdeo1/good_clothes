@@ -2,15 +2,49 @@
 // Runs on the product page. Scrapes -> scores materials locally -> asks backend for
 // brand research -> combines -> renders the badge.
 
-// ---------- 1. SCRAPE (TODO: set selectors for YOUR retailer) ----------
-// Open a product page, inspect the brand + material-composition elements, paste
-// their selectors here. THIS is the first thing to verify (see README pre-flight).
+// ---------- 1. SCRAPE (tuned for SSENSE) ----------
+// Brand: SSENSE links the designer name to /<locale>/.../designers/<slug>, so the
+// designer-link is a far stabler hook than the long Tailwind utility-class chain.
+// Composition: SSENSE buries "100% cotton" inside a mixed "ITEM INFO" text block with
+// no dedicated field, so instead of a brittle selector we scan for the leaf element
+// whose text actually matches a fiber percentage (the trick that passed pre-flight).
+
+// matches "100% cotton", "80% Cotton, 20% Polyester", "95% organic cotton", etc.
+const FIBER_RE =
+  /\b\d{1,3}\s*%\s*(?:organic |recycled |supima |pima )?(?:cotton|linen|hemp|wool|silk|cashmere|tencel|lyocell|modal|viscose|rayon|polyester|polyamide|nylon|elastane|spandex|acrylic|leather|cupro)/i;
+
+function findBrand() {
+  // primary: the designer link on the product page
+  const designer = document.querySelector('a[href*="/designers/"]');
+  if (designer && designer.innerText.trim()) return designer.innerText.trim();
+  // fallbacks for layout/site variation
+  const h1a = document.querySelector("h1 a");
+  if (h1a && h1a.innerText.trim()) return h1a.innerText.trim();
+  const h1 = document.querySelector("h1");
+  if (h1 && h1.innerText.trim()) return h1.innerText.trim();
+  return "Unknown";
+}
+
+function findComposition() {
+  // Walk leaf elements and return the tightest text node that names a fiber %.
+  // Tightest = avoids grabbing a giant parent block, but parseComposition() handles
+  // either since it pulls every "\d+% fiber" out of whatever string it's given.
+  let best = "";
+  const els = document.querySelectorAll("li, p, span, div, td");
+  for (const el of els) {
+    if (el.children.length !== 0) continue; // leaf only
+    const t = el.innerText && el.innerText.trim();
+    if (t && FIBER_RE.test(t)) {
+      if (!best || t.length < best.length) best = t;
+    }
+  }
+  return best;
+}
+
 function scrape() {
-  const brandEl = document.querySelector("TODO_BRAND_SELECTOR");
-  const materialEl = document.querySelector("TODO_MATERIAL_SELECTOR");
   return {
-    brand: (brandEl && brandEl.innerText.trim()) || "Unknown",
-    composition: (materialEl && materialEl.innerText.trim()) || "",
+    brand: findBrand(),
+    composition: findComposition(),
     title: document.title,
     url: location.href,
   };
