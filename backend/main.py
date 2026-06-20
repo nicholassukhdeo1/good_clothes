@@ -8,11 +8,14 @@ import cache
 import research
 import synthesize
 import alternatives
+import db
 from models import (
     ResearchRequest,
     ResearchResponse,
     AlternativesRequest,
     AlternativesResponse,
+    PrefSetRequest,
+    PrefResponse,
 )
 
 app = FastAPI(title="good_clothes")
@@ -76,3 +79,14 @@ def alternatives_for(req: AlternativesRequest):
 
     cache.put(key, result)
     return result
+
+
+@app.get("/prefs", response_model=PrefResponse)
+def get_prefs(user_id: str):
+    return {"pref": db.get_pref(user_id) or "", "persisted": db.enabled()}
+
+
+@app.post("/prefs", response_model=PrefResponse)
+def set_prefs(req: PrefSetRequest):
+    saved = db.set_pref(req.user_id, req.pref)
+    return {"pref": req.pref, "saved": saved, "persisted": db.enabled()}

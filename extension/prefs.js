@@ -34,3 +34,19 @@ window.GC_DEFAULT_PREF = "balanced";
 
 // key -> short label, for compact display in the badge/popup.
 window.GC_PREF_LABEL = window.GC_PREFS.reduce((m, p) => ((m[p.key] = p.label), m), {});
+
+// Backend base — extension pages (onboarding/popup) hit /prefs directly; it's in
+// host_permissions so the fetch is allowed.
+window.GC_BACKEND = "http://localhost:8000";
+
+// A stable anonymous id per install, so the backend can key preferences without any
+// login. Generated once and kept in local storage.
+window.GC_getUid = function (cb) {
+  chrome.storage.local.get("gc_uid", ({ gc_uid }) => {
+    if (gc_uid) return cb(gc_uid);
+    const id =
+      (self.crypto && crypto.randomUUID && crypto.randomUUID()) ||
+      `u_${Date.now()}_${Math.random().toString(16).slice(2)}`;
+    chrome.storage.local.set({ gc_uid: id }, () => cb(id));
+  });
+};

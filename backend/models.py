@@ -42,3 +42,14 @@ class AlternativesResponse(BaseModel):
     look: str = ""         # the visual query Claude read from the photo
     alternatives: List[Alternative] = []
     cached: bool = False
+
+
+class PrefSetRequest(BaseModel):
+    user_id: str           # anonymous id generated once per install
+    pref: str
+
+
+class PrefResponse(BaseModel):
+    pref: str = ""         # empty when nothing stored / Supabase not configured
+    saved: bool = False    # set on a successful write
+    persisted: bool = False  # whether Supabase is actually wired up
