@@ -111,19 +111,34 @@ function altsHtml(alts) {
   return `<div class="gc-alts"><div class="gc-alts-h">⚠ Better ${alts.category || "options"}${lane}</div>${look}${rows}</div>`;
 }
 
+let _loadTimer = null;
+let _loadStart = null;
+
 function renderBadge(state) {
   const el = ensureBadge();
   const { materials, research, final, phase, alternatives } = state;
 
   if (phase === "loading") {
+    if (_loadTimer) clearInterval(_loadTimer);
+    _loadStart = Date.now();
     el.innerHTML = `
       <div class="gc-ring" style="--c:#9aa0a6">…</div>
       <div class="gc-body">
         <div class="gc-title">good_clothes</div>
-        <div class="gc-row">Loading rating…</div>
+        <div class="gc-row">Researching brand…</div>
+        <div class="gc-row gc-eta" id="gc-eta">est. 15s</div>
       </div>`;
+    _loadTimer = setInterval(() => {
+      const etaEl = document.getElementById("gc-eta");
+      if (!etaEl) { clearInterval(_loadTimer); return; }
+      const elapsed = Math.round((Date.now() - _loadStart) / 1000);
+      const rem = Math.max(0, 15 - elapsed);
+      etaEl.textContent = rem > 0 ? `est. ${rem}s remaining` : `still working… (${elapsed}s)`;
+    }, 1000);
     return;
   }
+
+  if (_loadTimer) { clearInterval(_loadTimer); _loadTimer = null; }
 
   const big = final != null ? final : materials && materials.score != null ? materials.score : "…";
   const ring = colorFor(typeof big === "number" ? big : null);

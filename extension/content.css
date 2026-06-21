@@ -37,6 +37,7 @@
   margin-bottom: 4px;
 }
 #gc-badge .gc-row { color: #3c4043; }
+#gc-badge .gc-eta { font-size: 11px; color: #9aa0a6; margin-top: 2px; }
 #gc-badge .gc-sum { margin-top: 6px; color: #5f6368; font-style: italic; }
 #gc-badge .gc-src { margin-top: 6px; font-size: 11px; }
 #gc-badge .gc-src a { color: #1a73e8; text-decoration: none; }
