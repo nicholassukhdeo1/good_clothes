@@ -224,8 +224,8 @@ function startRun() {
   chrome.storage.sync.get({ gc_pref: window.GC_DEFAULT_PREF }, ({ gc_pref }) => run(gc_pref));
 }
 
-// Initial load
-startRun();
+// Initial load — only score if we're already on a product page
+if (/\/product\//.test(location.pathname)) startRun();
 
 // SSENSE uses client-side routing (pushState), so the content script doesn't
 // re-fire when the user clicks between products. Intercept history changes and
