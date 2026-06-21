@@ -227,29 +227,27 @@ function startRun() {
 // Initial load — only score if we're already on a product page
 if (/\/product\//.test(location.pathname)) startRun();
 
-// SSENSE uses client-side routing (pushState), so the content script doesn't
-// re-fire when the user clicks between products. Intercept history changes and
-// re-run whenever the URL lands on a product page.
-let _lastUrl = location.href;
-
-function onNavigate() {
-  const url = location.href;
-  if (url === _lastUrl) return;
-  _lastUrl = url;
-
-  if (!/\/product\//.test(url)) {
-    // navigated away from a product page — remove badge
+// SPA navigation: background.js listens via webNavigation (browser-level, not
+// page-level JS) and messages us when the URL changes to/from a product page.
+chrome.runtime.onMessage.addListener((msg) => {
+  if (msg.type === "GC_NAV") {
+    setTimeout(startRun, 600);
+  } else if (msg.type === "GC_NAV_AWAY") {
     const badge = document.getElementById("gc-badge");
     if (badge) badge.remove();
-    return;
+    if (_loadTimer) { clearInterval(_loadTimer); _loadTimer = null; }
   }
+});
 
-  // Give the SPA ~800ms to swap in the new product DOM before scraping
-  setTimeout(startRun, 800);
-}
-
-const _origPush = history.pushState.bind(history);
-history.pushState = function (...a) { _origPush(...a); onNavigate(); };
-
-const _origReplace = history.replaceState.bind(history);
-history.replaceState = function (...a) { _origReplace(...a); onNavigate(); };
+// Polling fallback: catches any navigation the webNavigation listener misses
+let _lastUrl = location.href;
+setInterval(() => {
+  if (location.href === _lastUrl) return;
+  _lastUrl = location.href;
+  if (/\/product\//.test(location.href)) {
+    setTimeout(startRun, 600);
+  } else {
+    const badge = document.getElementById("gc-badge");
+    if (badge) badge.remove();
+  }
+}, 500);

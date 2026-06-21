@@ -23,6 +23,22 @@ const ROUTES = {
   ],
 };
 
+// Detect SPA navigation on SSENSE (pushState / replaceState) from the browser
+// level — content scripts can't intercept page-level history calls reliably
+// because they run in an isolated JS world.
+chrome.webNavigation.onHistoryStateUpdated.addListener(
+  (details) => {
+    if (/\/product\//.test(details.url)) {
+      // Tell the content script a new product page has loaded
+      chrome.tabs.sendMessage(details.tabId, { type: "GC_NAV", url: details.url }).catch(() => {});
+    } else {
+      // Navigated away from a product — tell the badge to hide
+      chrome.tabs.sendMessage(details.tabId, { type: "GC_NAV_AWAY" }).catch(() => {});
+    }
+  },
+  { url: [{ hostSuffix: "ssense.com" }] }
+);
+
 chrome.runtime.onMessage.addListener((msg, _sender, sendResponse) => {
   const route = ROUTES[msg.type];
   if (!route) return;

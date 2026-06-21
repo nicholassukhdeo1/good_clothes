@@ -3,7 +3,7 @@
   "name": "good_clothes",
   "version": "0.1.0",
   "description": "How worthy is this item to buy? A 0-100 score on materials, ethics, and ownership.",
-  "permissions": ["storage", "activeTab"],
+  "permissions": ["storage", "activeTab", "webNavigation"],
   "host_permissions": [
     "*://*.ssense.com/*",
     "https://good-clothes-backend.onrender.com/*",
