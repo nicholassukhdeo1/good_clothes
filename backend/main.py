@@ -10,12 +10,15 @@ import cache
 import research
 import synthesize
 import alternatives
+import chat as chat_module
 import db
 from models import (
     ResearchRequest,
     ResearchResponse,
     AlternativesRequest,
     AlternativesResponse,
+    ChatRequest,
+    ChatResponse,
     PrefSetRequest,
     PrefResponse,
 )
@@ -77,8 +80,9 @@ def alternatives_for(req: AlternativesRequest):
     # Key on the image too: alternatives are matched to THIS item's look, so two items
     # of the same brand+category (different colors/photos) must not share a cache entry.
     img_key = hashlib.sha1(req.image.encode("utf-8")).hexdigest()[:10] if req.image else "noimg"
-    # pref is part of the key: the same item under a different style lane is a different result.
-    key = f"alt::{brand.lower()}::{category}::{req.pref}::{img_key}"  # namespaced; can't collide with /research
+    # pref is part of the key. Hash it so long free-form style briefs don't bloat the key.
+    pref_key = hashlib.sha1(req.pref.encode("utf-8")).hexdigest()[:8] if req.pref else "def"
+    key = f"alt::{brand.lower()}::{category}::{pref_key}::{img_key}"
 
     hit = cache.get(key)
     if hit:
@@ -92,6 +96,13 @@ def alternatives_for(req: AlternativesRequest):
 
     cache.put(key, result)
     return result
+
+
+@app.post("/chat", response_model=ChatResponse)
+def style_chat(req: ChatRequest):
+    messages = [{"role": m.role, "content": m.content} for m in req.messages]
+    result = chat_module.chat(messages)
+    return {"message": result.get("message", ""), "pref_text": result.get("pref_text", "")}
 
 
 @app.get("/prefs", response_model=PrefResponse)

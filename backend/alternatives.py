@@ -68,7 +68,10 @@ PREF_GUIDANCE = {
 
 
 def pref_guidance(pref: str) -> str:
-    return PREF_GUIDANCE.get(pref, PREF_GUIDANCE["balanced"])
+    # Old dropdown keys still work; free-form chat briefs pass straight through.
+    if pref in PREF_GUIDANCE:
+        return PREF_GUIDANCE[pref]
+    return pref if pref else PREF_GUIDANCE["balanced"]
 
 
 def infer_category(title: str) -> str:
