@@ -217,5 +217,39 @@ function run(pref) {
   });
 }
 
-// Load the user's style lane (set during onboarding), then score the page.
-chrome.storage.sync.get({ gc_pref: window.GC_DEFAULT_PREF }, ({ gc_pref }) => run(gc_pref));
+function startRun() {
+  const old = document.getElementById("gc-badge");
+  if (old) old.remove();
+  if (_loadTimer) { clearInterval(_loadTimer); _loadTimer = null; }
+  chrome.storage.sync.get({ gc_pref: window.GC_DEFAULT_PREF }, ({ gc_pref }) => run(gc_pref));
+}
+
+// Initial load
+startRun();
+
+// SSENSE uses client-side routing (pushState), so the content script doesn't
+// re-fire when the user clicks between products. Intercept history changes and
+// re-run whenever the URL lands on a product page.
+let _lastUrl = location.href;
+
+function onNavigate() {
+  const url = location.href;
+  if (url === _lastUrl) return;
+  _lastUrl = url;
+
+  if (!/\/product\//.test(url)) {
+    // navigated away from a product page — remove badge
+    const badge = document.getElementById("gc-badge");
+    if (badge) badge.remove();
+    return;
+  }
+
+  // Give the SPA ~800ms to swap in the new product DOM before scraping
+  setTimeout(startRun, 800);
+}
+
+const _origPush = history.pushState.bind(history);
+history.pushState = function (...a) { _origPush(...a); onNavigate(); };
+
+const _origReplace = history.replaceState.bind(history);
+history.replaceState = function (...a) { _origReplace(...a); onNavigate(); };
