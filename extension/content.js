@@ -5,13 +5,18 @@
 
 // ---------- 1. SCRAPE (tuned for SSENSE) ----------
 
-// Primary: "80% cotton", "100% leather", etc.
+// Matches percentage-based compositions: "80% Cotton", "100% Stainless Steel", etc.
 const FIBER_RE =
-  /\b\d{1,3}\s*%\s*(?:organic |recycled |supima |pima )?(?:cotton|linen|hemp|wool|silk|cashmere|tencel|lyocell|modal|viscose|rayon|polyester|polyamide|nylon|elastane|spandex|acrylic|leather|suede|nubuck|cupro)/i;
+  /\b\d{1,3}\s*%\s*(?:organic |recycled |supima |pima )?(?:cotton|linen|hemp|wool|silk|cashmere|tencel|lyocell|modal|viscose|rayon|polyester|polyamide|nylon|elastane|spandex|acrylic|leather|suede|nubuck|cupro|down|feather|rubber|polyurethane|neoprene|acetate)/i;
 
-// Fallback for items with no percentage listing (leather boots, suede shoes, etc.)
+// Bare material recognition — metals, leathers, fill, rubber, textiles, optical.
+// Listed longest-first so "stainless steel" matches before "steel".
 const BARE_MATERIAL_RE =
-  /\b(?:full[- ]grain\s+)?(?:leather|suede|nubuck|canvas|denim|tweed|corduroy)\b/i;
+  /\b(?:sterling silver|925 sterling|925 silver|18k gold|14k gold|9k gold|gold[- ]plated(?:\s+\w+)?|silver[- ]plated|stainless steel|full[- ]grain leather|nappa leather|patent leather|saffiano leather|grained leather|calfskin leather|lambskin leather|genuine leather|pony hair|goose down|duck down|down feather|down fill|natural rubber|vulcanized rubber|faux leather|vegan leather|pu leather|titanium|brass|copper|silver|gold|pewter|zinc|steel|rubber|leather|suede|nubuck|shearling|fleece|denim|tweed|corduroy|canvas|velvet|satin|chiffon|lace|jersey|mesh|felt|acetate|neoprene|cork|bamboo|wood|down)\b/i;
+
+// "Upper: Leather, Sole: Rubber" — labelled multi-part descriptions
+const LABELLED_RE =
+  /(?:upper|outer|shell|lining|sole|insole|fill|material|composition|fabric|body|hardware|closure|chain|pendant|frame|lens|strap|trim)\s*[:–\-]\s*([^,\n·•]{2,60})/i;
 
 function findBrand() {
   const designer = document.querySelector('a[href*="/designers/"]');
@@ -24,20 +29,35 @@ function findBrand() {
 }
 
 function findComposition() {
-  let best = "";
-  let bareBest = "";
+  let pctBest = "";      // has explicit X%
+  let labelBest = "";    // has "Upper: Leather" style label
+  let bareBest = "";     // bare material keyword only
+
   const els = document.querySelectorAll("li, p, span, div, td");
   for (const el of els) {
     if (el.children.length !== 0) continue;
     const t = el.innerText && el.innerText.trim();
-    if (!t) continue;
+    if (!t || t.length > 300) continue;
+
     if (FIBER_RE.test(t)) {
-      if (!best || t.length < best.length) best = t;
-    } else if (!bareBest && BARE_MATERIAL_RE.test(t) && t.length < 120) {
+      // Prefer the shortest percentage-bearing string (fewest extra words)
+      if (!pctBest || t.length < pctBest.length) pctBest = t;
+    } else if (!labelBest && LABELLED_RE.test(t)) {
+      labelBest = t;
+    } else if (!bareBest && BARE_MATERIAL_RE.test(t) && t.length < 150) {
       bareBest = t;
     }
   }
-  return best || bareBest;
+
+  // Fallback: scan the og:description or page title for bare material keywords
+  // (catches jewelry/accessories where the material is only in the product name)
+  if (!pctBest && !labelBest && !bareBest) {
+    const meta = document.querySelector('meta[name="description"], meta[property="og:description"]');
+    const metaText = (meta && meta.content) || document.title || "";
+    if (BARE_MATERIAL_RE.test(metaText)) bareBest = metaText.slice(0, 200);
+  }
+
+  return pctBest || labelBest || bareBest;
 }
 
 function findImage() {
