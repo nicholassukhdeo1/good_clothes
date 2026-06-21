@@ -3,13 +3,14 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>good_clothes — know what's worth buying</title>
+  <title>good_clothes — deck</title>
   <style>
     :root {
       --green: #1e8e3e;
       --ink: #1b1c1a;
       --muted: #5f6368;
       --bg: #f6f7f5;
+      --white: #ffffff;
     }
     * { box-sizing: border-box; margin: 0; padding: 0; }
     body {
@@ -29,15 +30,17 @@
     }
     .slide.active { display: flex; }
 
+    /* ── backgrounds ── */
     .slide-title    { background: radial-gradient(1200px 700px at 50% -20%, #d4edda 0%, #f6f7f5 60%); color: var(--ink); }
     .slide-problem  { background: #1b1c1a; color: #fff; }
-    .slide-solution { background: #fff; color: var(--ink); }
+    .slide-solution { background: var(--white); color: var(--ink); }
     .slide-how      { background: var(--bg); color: var(--ink); }
-    .slide-tech     { background: #fff; color: var(--ink); }
+    .slide-tech     { background: var(--white); color: var(--ink); }
     .slide-demo     { background: radial-gradient(900px 500px at 60% 50%, #eaf5ec 0%, #f6f7f5 70%); color: var(--ink); }
     .slide-next     { background: #1b1c1a; color: #fff; }
     .slide-end      { background: var(--green); color: #fff; }
 
+    /* ── shared ── */
     .label {
       font-size: 11px; font-weight: 700; letter-spacing: .12em;
       text-transform: uppercase; opacity: .5; margin-bottom: 14px;
@@ -46,63 +49,67 @@
     h2 { font-size: 32px; font-weight: 800; line-height: 1.15; margin-bottom: 10px; }
     p  { font-size: 18px; line-height: 1.6; }
     .g { color: var(--green); }
+    .dim { opacity: .55; }
 
-    /* title */
+    /* ── title slide ── */
     .brand { font-size: 20px; font-weight: 800; margin-bottom: 48px; }
     .brand span { color: var(--green); }
     .title-sub { font-size: 22px; color: var(--muted); margin-top: 18px; max-width: 520px; line-height: 1.5; }
     .author { margin-top: auto; font-size: 14px; color: var(--muted); }
 
-    /* problem */
-    .stat-row { display: flex; gap: 40px; margin-top: 40px; }
+    /* ── problem slide ── */
+    .stat-row { display: flex; gap: 40px; margin-top: 40px; align-items: flex-start; }
+    .stat { flex: 1; }
     .stat .num { font-size: 56px; font-weight: 800; color: var(--green); line-height: 1; }
     .stat .cap { font-size: 15px; opacity: .65; margin-top: 6px; line-height: 1.4; }
     .problem-call { margin-top: 40px; font-size: 22px; font-weight: 700; color: var(--green); }
 
-    /* solution */
+    /* ── solution slide ── */
     .score-row { display: flex; gap: 18px; margin-top: 30px; }
-    .pill { flex: 1; background: var(--bg); border-radius: 14px; padding: 20px; }
+    .pill {
+      flex: 1; background: var(--bg); border-radius: 14px; padding: 20px;
+      display: flex; flex-direction: column; gap: 4px;
+    }
     .pill .weight { font-size: 28px; font-weight: 800; color: var(--green); }
-    .pill .name   { font-size: 14px; font-weight: 700; margin-top: 2px; }
-    .pill .desc   { font-size: 13px; color: var(--muted); line-height: 1.4; margin-top: 4px; }
-    .formula { margin-top: 24px; font-size: 15px; color: var(--muted); font-family: monospace; }
+    .pill .name   { font-size: 14px; font-weight: 700; }
+    .pill .desc   { font-size: 13px; color: var(--muted); line-height: 1.4; }
+    .formula { margin-top: 24px; font-size: 16px; color: var(--muted); font-family: monospace; }
 
-    /* how */
+    /* ── how it works ── */
     .steps { display: grid; grid-template-columns: repeat(3,1fr); gap: 18px; margin-top: 30px; }
     .step  { background: #fff; border-radius: 14px; padding: 22px; }
     .step .n { font-weight: 800; color: var(--green); font-size: 13px; margin-bottom: 8px; }
     .step h3 { font-size: 16px; margin-bottom: 6px; }
     .step p  { font-size: 14px; color: var(--muted); line-height: 1.5; }
 
-    /* tech */
+    /* ── tech slide ── */
     .tech-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; margin-top: 30px; }
-    .tech-card { border: 1.5px solid #e8ebe7; border-radius: 14px; padding: 20px; }
-    .tc-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--green); margin-bottom: 6px; }
+    .tech-card {
+      border: 1.5px solid #e8ebe7; border-radius: 14px; padding: 20px;
+      display: flex; flex-direction: column; gap: 6px;
+    }
     .tech-card .tc-name { font-size: 17px; font-weight: 800; }
-    .tech-card .tc-role { font-size: 13px; color: var(--muted); line-height: 1.4; margin-top: 4px; }
+    .tech-card .tc-role { font-size: 13px; color: var(--muted); line-height: 1.4; }
+    .tc-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--green); margin-bottom: 4px; }
 
-    /* demo */
+    /* ── demo slide ── */
     .demo-steps { margin-top: 30px; display: flex; flex-direction: column; gap: 16px; }
     .demo-step { display: flex; align-items: flex-start; gap: 16px; }
     .ds-num { width: 36px; height: 36px; border-radius: 50%; background: var(--green); color: #fff; font-weight: 800; font-size: 15px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
     .ds-text { font-size: 17px; line-height: 1.5; }
     .ds-text small { display: block; font-size: 13px; color: var(--muted); margin-top: 2px; font-family: monospace; }
 
-    /* next */
+    /* ── next / end ── */
     .next-list { margin-top: 30px; display: flex; flex-direction: column; gap: 14px; }
     .next-item { display: flex; align-items: flex-start; gap: 14px; font-size: 18px; line-height: 1.5; }
     .ni-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--green); margin-top: 8px; flex-shrink: 0; }
-
-    /* end */
     .end-big { font-size: 56px; font-weight: 800; margin-top: auto; margin-bottom: 10px; }
     .end-sub { font-size: 20px; opacity: .75; }
-    .end-links { margin-top: auto; display: flex; gap: 16px; }
-    .end-links a { color: #fff; font-size: 14px; opacity: .7; text-decoration: none; font-family: monospace; }
-    .end-links a:hover { opacity: 1; }
+    .end-url { margin-top: auto; font-size: 14px; opacity: .65; font-family: monospace; }
 
-    /* nav */
+    /* ── nav ── */
     .nav {
-      position: absolute; bottom: -48px; left: 50%; transform: translateX(-50%);
+      position: absolute; bottom: -44px; left: 50%; transform: translateX(-50%);
       display: flex; gap: 8px; align-items: center;
     }
     .nav button {
@@ -110,7 +117,7 @@
       padding: 6px 18px; font-size: 14px; cursor: pointer; font-family: inherit;
     }
     .nav button:hover { background: var(--green); }
-    .counter { color: #666; font-size: 13px; min-width: 52px; text-align: center; }
+    .nav .counter { color: #666; font-size: 13px; min-width: 52px; text-align: center; }
   </style>
 </head>
 <body>
@@ -187,7 +194,7 @@
       <div class="step">
         <div class="n">03 — Find better that fits</div>
         <h3>Vision-guided alternatives</h3>
-        <p>Claude reads the product photo, describes the look, and returns conscious brands — each with a direct link for that exact color and silhouette.</p>
+        <p>Claude reads the product photo, describes the look, and returns conscious brands — each with a direct search link for that exact color and silhouette.</p>
       </div>
     </div>
   </div>
@@ -199,23 +206,23 @@
     <div class="demo-steps">
       <div class="demo-step">
         <div class="ds-num">1</div>
-        <div class="ds-text">Badge appears instantly: <strong>Score 40</strong> — Materials 25, Ethics 50, Ownership 50
-          <small>100% polyester → low materials score, parsed locally</small></div>
+        <div class="ds-text">Badge appears: <strong>Score 40</strong> — Materials 25, Ethics 50, Ownership 50
+          <small>100% polyester → low materials score</small></div>
       </div>
       <div class="demo-step">
         <div class="ds-num">2</div>
-        <div class="ds-text">Alternatives load: <strong>⚠ Better vest · Avant-garde</strong>
-          <small>Claude vision read the orange quilted photo and matched the look</small></div>
+        <div class="ds-text">Alternatives section loads: <strong>"⚠ Better vest · Avant-garde"</strong>
+          <small>Claude vision read the orange quilted photo</small></div>
       </div>
       <div class="demo-step">
         <div class="ds-num">3</div>
-        <div class="ds-text">Click an alternative → Google Shopping, filtered to that exact look
+        <div class="ds-text">Click an alternative → Google Shopping opens, filtered to that exact look
           <small>color + silhouette query built server-side, never hallucinated</small></div>
       </div>
     </div>
   </div>
 
-  <!-- 6. TECH -->
+  <!-- 6. TECH STACK -->
   <div class="slide slide-tech">
     <div class="label">Built with</div>
     <h2>Every sponsor is load-bearing.</h2>
@@ -223,7 +230,7 @@
       <div class="tech-card">
         <div class="tc-dot"></div>
         <div class="tc-name">Claude (Anthropic)</div>
-        <div class="tc-role">Brand ethics synthesis (text) + product look extraction (vision). Two distinct use cases, one model.</div>
+        <div class="tc-role">Brand ethics synthesis (text) + product look extraction (vision). Two distinct use cases in one model.</div>
       </div>
       <div class="tech-card">
         <div class="tc-dot"></div>
@@ -243,14 +250,14 @@
     </div>
   </div>
 
-  <!-- 7. NEXT -->
+  <!-- 7. WHAT'S NEXT -->
   <div class="slide slide-next">
     <div class="label" style="color:#fff;">What's next</div>
     <h2>The foundation scales.</h2>
     <div class="next-list">
       <div class="next-item"><div class="ni-dot"></div><span><strong>More retailers</strong> — ASOS, Zara, Net-a-Porter. One scraper file per site, everything else reuses.</span></div>
-      <div class="next-item"><div class="ni-dot"></div><span><strong>Brand timeline</strong> — track a brand's ethics score over time. Show if they're improving.</span></div>
-      <div class="next-item"><div class="ni-dot"></div><span><strong>Any page detection</strong> — trigger on any clothing product page without a domain allow-list.</span></div>
+      <div class="next-item"><div class="ni-dot"></div><span><strong>Brand timeline</strong> — track a brand's ethics score over time. Show if they're getting better or worse.</span></div>
+      <div class="next-item"><div class="ni-dot"></div><span><strong>Any page detection</strong> — trigger on any clothing product page without needing a domain allow-list.</span></div>
       <div class="next-item"><div class="ni-dot"></div><span><strong>Community scores</strong> — let users flag bad data and improve the evidence corpus.</span></div>
     </div>
   </div>
@@ -259,13 +266,11 @@
   <div class="slide slide-end">
     <div class="label" style="color:#fff9;">good_clothes</div>
     <div class="end-big">Buy less.<br>Buy better.</div>
-    <div class="end-sub">Fighting fast fashion, one purchase at a time.</div>
-    <div class="end-links">
-      <a href="https://github.com/nicholassukhdeo1/good_clothes" target="_blank">github.com/nicholassukhdeo1/good_clothes</a>
-      <a href="/health">API status ↗</a>
-    </div>
+    <div class="end-sub">github.com/nicholassukhdeo1/good_clothes</div>
+    <div class="end-url">good-clothes-backend.onrender.com</div>
   </div>
 
+  <!-- NAV -->
   <div class="nav">
     <button id="prev">← Prev</button>
     <span class="counter" id="counter">1 / 8</span>
@@ -277,14 +282,17 @@
   const slides = document.querySelectorAll('.slide');
   let cur = 0;
   const counter = document.getElementById('counter');
+
   function show(n) {
     slides[cur].classList.remove('active');
     cur = (n + slides.length) % slides.length;
     slides[cur].classList.add('active');
     counter.textContent = `${cur + 1} / ${slides.length}`;
   }
+
   document.getElementById('prev').onclick = () => show(cur - 1);
   document.getElementById('next').onclick = () => show(cur + 1);
+
   document.addEventListener('keydown', e => {
     if (e.key === 'ArrowRight' || e.key === 'ArrowDown' || e.key === ' ') show(cur + 1);
     if (e.key === 'ArrowLeft'  || e.key === 'ArrowUp')                     show(cur - 1);
