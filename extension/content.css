@@ -1,111 +1,226 @@
-/* content.css */
+/* content.css — good_clothes in-page badge (editorial redesign).
+   Drop-in replacement. All visuals are scoped under #gc-badge so nothing
+   leaks onto the host page.
+
+   FONTS: Archivo + Newsreader are pulled from Google Fonts. Some shops set a
+   strict Content-Security-Policy that blocks remote fonts injected by a
+   content script — if that happens the badge falls back to Georgia (serif)
+   and the system sans, which still reads editorial. See README in this folder. */
+@import url("https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700;800&family=Newsreader:ital,opsz,wght@0,18..72,400;0,18..72,500;1,18..72,400&display=swap");
+
 #gc-badge {
   position: fixed;
   bottom: 20px;
   right: 20px;
   z-index: 2147483647;
-  display: flex;
-  gap: 12px;
-  align-items: flex-start;
+  box-sizing: border-box;
   width: 280px;
   max-height: calc(100vh - 40px);
   overflow-y: auto;
-  padding: 14px;
+  padding: 16px;
   background: #ffffff;
-  color: #202124;
+  color: #1a1916;
   border-radius: 14px;
-  box-shadow: 0 6px 24px rgba(0, 0, 0, 0.18);
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  box-shadow: 0 6px 24px rgba(26, 25, 22, 0.12);
+  font-family: "Archivo", system-ui, -apple-system, "Segoe UI", sans-serif;
   font-size: 13px;
-  line-height: 1.4;
+  line-height: 1.45;
 }
-#gc-badge .gc-ring {
-  flex: 0 0 auto;
-  position: sticky;
-  top: 0;
-  width: 52px;
-  height: 52px;
-  border-radius: 50%;
+#gc-badge *,
+#gc-badge *::before,
+#gc-badge *::after { box-sizing: border-box; }
+
+/* ---- header ---- */
+#gc-badge .gc-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 14px;
+}
+#gc-badge .gc-wordmark {
+  font-weight: 800;
+  font-size: 13px;
+  letter-spacing: 0.01em;
+  color: #1a1916;
+}
+#gc-badge .gc-wordmark i { font-style: normal; color: #2f5d3a; }
+#gc-badge .gc-replay {
+  border: 0;
+  background: transparent;
+  color: #908d82;
+  font-size: 14px;
+  line-height: 1;
+  padding: 2px;
+  cursor: pointer;
+}
+#gc-badge .gc-replay:hover { color: #44423c; }
+
+/* ---- score hero ---- */
+#gc-badge .gc-hero { display: flex; align-items: center; gap: 14px; }
+#gc-badge .gc-hero-info { min-width: 0; flex: 1; overflow: hidden; }
+#gc-badge .gc-ring-wrap { position: relative; flex: 0 0 auto; }
+#gc-badge .gc-ring-num {
+  position: absolute;
+  inset: 0;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-weight: 700;
+  font-family: "Newsreader", Georgia, serif;
+  letter-spacing: -0.01em;
+  color: #1a1916;
+  line-height: 1;
+}
+#gc-badge .gc-arc-val { transition: stroke-dasharray 900ms cubic-bezier(0.65, 0, 0.35, 1); }
+#gc-badge .gc-arc-load {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: gc-spin 1s linear infinite;
+}
+@keyframes gc-spin { to { transform: rotate(360deg); } }
+
+#gc-badge .gc-verdict {
+  font-size: 10px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: #908d82;
+  font-weight: 600;
+}
+#gc-badge .gc-brand {
+  font-family: "Newsreader", Georgia, serif;
   font-size: 18px;
-  color: #fff;
-  background: var(--c, #9aa0a6);
+  line-height: 1.15;
+  margin-top: 2px;
+  color: #1a1916;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
-#gc-badge .gc-title {
-  font-weight: 700;
-  font-size: 12px;
-  letter-spacing: 0.02em;
-  margin-bottom: 4px;
+#gc-badge .gc-loading { margin-top: 12px; font-size: 12px; color: #6f6c63; }
+#gc-badge .gc-loading .gc-eta { color: #908d82; }
+
+#gc-badge .gc-divider { height: 1px; background: #efece4; margin: 12px 0; }
+
+/* ---- breakdown ---- */
+#gc-badge .gc-metric { margin-bottom: 10px; }
+#gc-badge .gc-metric:last-child { margin-bottom: 0; }
+#gc-badge .gc-metric-top {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  margin-bottom: 5px;
 }
-#gc-badge .gc-row { color: #3c4043; }
-#gc-badge .gc-eta { font-size: 11px; color: #9aa0a6; margin-top: 2px; }
-#gc-badge .gc-sum-wrap { margin-top: 6px; }
+#gc-badge .gc-metric-label {
+  font-size: 11px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  font-weight: 600;
+  color: #44423c;
+}
+#gc-badge .gc-metric-val { font-size: 12px; color: #908d82; font-variant-numeric: tabular-nums; }
+#gc-badge .gc-metric-val b { color: #1a1916; font-weight: 600; }
+#gc-badge .gc-metric-hint { color: #908d82; font-style: italic; }
+#gc-badge .gc-bar { height: 3px; border-radius: 2px; background: #efece4; overflow: hidden; }
+#gc-badge .gc-bar > span {
+  display: block;
+  height: 100%;
+  border-radius: 2px;
+  transition: width 900ms cubic-bezier(0.65, 0, 0.35, 1);
+}
+
+/* ---- summary ---- */
+#gc-badge .gc-sum-wrap { margin-top: 12px; }
 #gc-badge .gc-sum {
-  display: none;
-  color: #5f6368;
+  font-family: "Newsreader", Georgia, serif;
   font-style: italic;
-  line-height: 1.45;
+  font-size: 12.5px;
+  color: #44423c;
+  line-height: 1.5;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
 }
-#gc-badge .gc-sum.gc-sum-open { display: block; margin-bottom: 4px; }
+#gc-badge .gc-sum.gc-sum-open { -webkit-line-clamp: unset; }
 #gc-badge .gc-readmore {
+  margin-top: 6px;
+  display: inline-block;
   font-size: 11px;
   font-weight: 600;
-  color: #1a73e8;
+  letter-spacing: 0.02em;
+  color: #2f5d3a;
   cursor: pointer;
   user-select: none;
 }
 #gc-badge .gc-readmore:hover { text-decoration: underline; }
-#gc-badge .gc-src { margin-top: 6px; font-size: 11px; }
-#gc-badge .gc-src a { color: #1a73e8; text-decoration: none; }
+
+/* ---- sources ---- */
+#gc-badge .gc-src {
+  margin-top: 10px;
+  font-size: 11px;
+  color: #908d82;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px;
+}
+#gc-badge .gc-src .gc-src-h { letter-spacing: 0.14em; text-transform: uppercase; font-weight: 600; }
+#gc-badge .gc-src .gc-dot { color: #c2bfb4; }
+#gc-badge .gc-src a { color: #2f5d3a; text-decoration: none; text-underline-offset: 2px; }
 #gc-badge .gc-src a:hover { text-decoration: underline; }
 
-#gc-badge .gc-alts {
-  margin-top: 10px;
-  padding-top: 8px;
-  border-top: 1px solid #ececec;
-}
-#gc-badge .gc-alts-h {
-  font-weight: 700;
-  font-size: 11px;
-  color: #1e8e3e;
+/* ---- alternatives ---- */
+#gc-badge .gc-alts { margin-top: 14px; padding-top: 12px; border-top: 1px solid #e3e0d6; }
+#gc-badge .gc-alts-top {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
   margin-bottom: 2px;
 }
+#gc-badge .gc-alts-h {
+  font-size: 10px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  font-weight: 700;
+  color: #2f5d3a;
+}
+#gc-badge .gc-alts-lane { font-size: 10px; color: #908d82; }
 #gc-badge .gc-alts-look {
-  font-size: 11px;
-  color: #5f6368;
+  font-family: "Newsreader", Georgia, serif;
   font-style: italic;
-  margin-bottom: 6px;
+  font-size: 11px;
+  color: #6f6c63;
+  margin-bottom: 10px;
 }
 #gc-badge .gc-alt {
-  margin-bottom: 6px;
+  margin-bottom: 11px;
   display: grid;
   grid-template-columns: 1fr auto;
   align-items: baseline;
-  column-gap: 6px;
+  column-gap: 8px;
+  row-gap: 3px;
 }
+#gc-badge .gc-alt:last-child { margin-bottom: 0; }
 #gc-badge .gc-alt a {
-  color: #1e8e3e;
+  color: #1a1916;
   font-weight: 600;
-  text-decoration: underline;
-  text-underline-offset: 2px;
+  font-size: 13px;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: baseline;
+  gap: 6px;
 }
-#gc-badge .gc-alt a:hover { color: #156c2e; }
+#gc-badge .gc-alt a:hover { color: #2f5d3a; }
 #gc-badge .gc-alt-shop {
-  font-size: 10px;
+  font-size: 9px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
   font-weight: 700;
-  letter-spacing: .03em;
-  opacity: .75;
+  color: #2f5d3a;
 }
 #gc-badge .gc-alt-score {
-  font-weight: 700;
-  font-size: 11px;
-  color: #1e8e3e;
+  font-family: "Newsreader", Georgia, serif;
+  font-size: 13px;
+  font-variant-numeric: tabular-nums;
+  justify-self: end;
 }
-#gc-badge .gc-alt-why {
-  grid-column: 1 / -1;
-  color: #5f6368;
-  font-size: 11px;
-}
+#gc-badge .gc-alt-why { grid-column: 1 / -1; color: #6f6c63; font-size: 11.5px; line-height: 1.45; }
