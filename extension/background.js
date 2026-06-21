@@ -19,7 +19,7 @@ const ROUTES = {
   RESEARCH: (m) => ["/research", { brand: m.brand }],
   ALTERNATIVES: (m) => [
     "/alternatives",
-    { brand: m.brand, title: m.title, score: m.score, composition: m.composition, image: m.image },
+    { brand: m.brand, title: m.title, score: m.score, composition: m.composition, image: m.image, pref: m.pref || "" },
   ],
 };
 

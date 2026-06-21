@@ -301,7 +301,7 @@ function run(pref) {
       { type: "ALTERNATIVES", brand: data.brand, title: data.title, score: final, composition: data.composition, image: data.image, pref },
       (alt) => {
         const alternatives = chrome.runtime.lastError || !alt || alt.error ? null : alt;
-        if (alternatives) alternatives.prefLabel = window.GC_PREF_LABEL[pref] || "";
+        if (alternatives) alternatives.prefLabel = window.GC_PREF_LABEL[pref] || pref || "";
         renderBadge({ phase: "done", materials: mat, research: res, final, brand: data.brand, alternatives });
         if (alternatives) {
           chrome.storage.local.set({ gc_last: { materials: mat, research: res, final, brand: data.brand, alternatives, url: data.url } });
