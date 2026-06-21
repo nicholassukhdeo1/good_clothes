@@ -230,14 +230,28 @@ function renderBadge(state) {
   const showAlts = final != null && final < ALT_THRESHOLD ? altsHtml(alternatives) : "";
 
   el.innerHTML =
-    `<div class="gc-head">${WORDMARK}<button class="gc-replay" title="Re-score" id="gc-replay">↻</button></div>` +
-    `<div class="gc-hero">${ringSvg(big, 56, big == null)}` +
+    `<div class="gc-head">${WORDMARK}<div class="gc-actions"><button class="gc-replay" title="Re-score" id="gc-replay">↻</button><button class="gc-minimize" title="Minimize" id="gc-minimize">—</button></div></div>` +
+    `<div class="gc-hero" id="gc-hero">${ringSvg(big, 56, big == null)}` +
     `<div class="gc-hero-info"><div class="gc-verdict">${verdictFor(big)}</div>` +
     `<div class="gc-brand">${brand}</div></div></div>` +
-    breakdown + summary + sources + showAlts;
+    `<div class="gc-collapsible">` + breakdown + summary + sources + showAlts + `</div>`;
 
   const replay = document.getElementById("gc-replay");
   if (replay) replay.addEventListener("click", startRun);
+
+  const minimize = document.getElementById("gc-minimize");
+  if (minimize) minimize.addEventListener("click", () => {
+    el.classList.toggle("gc-min");
+    minimize.textContent = el.classList.contains("gc-min") ? "+" : "—";
+  });
+
+  const hero = document.getElementById("gc-hero");
+  if (hero) hero.addEventListener("click", () => {
+    if (el.classList.contains("gc-min")) {
+      el.classList.remove("gc-min");
+      minimize.textContent = "—";
+    }
+  });
 }
 
 // ---------- 3. MAIN ---------- (unchanged logic)

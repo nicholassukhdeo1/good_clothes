@@ -44,16 +44,26 @@
   color: #1a1916;
 }
 #gc-badge .gc-wordmark i { font-style: normal; color: #2f5d3a; }
-#gc-badge .gc-replay {
+#gc-badge .gc-actions { display: flex; gap: 6px; align-items: center; }
+#gc-badge .gc-replay,
+#gc-badge .gc-minimize {
   border: 0;
   background: transparent;
   color: #908d82;
   font-size: 14px;
   line-height: 1;
-  padding: 2px;
+  padding: 2px 4px;
   cursor: pointer;
 }
-#gc-badge .gc-replay:hover { color: #44423c; }
+#gc-badge .gc-replay:hover,
+#gc-badge .gc-minimize:hover { color: #44423c; }
+
+/* minimized state — collapses to just the score ring */
+#gc-badge.gc-min { padding: 10px; width: auto; cursor: pointer; }
+#gc-badge.gc-min .gc-head { display: none; }
+#gc-badge.gc-min .gc-collapsible { display: none; }
+#gc-badge.gc-min .gc-hero { gap: 0; }
+#gc-badge.gc-min .gc-hero-info { display: none; }
 
 /* ---- score hero ---- */
 #gc-badge .gc-hero { display: flex; align-items: center; gap: 14px; }
