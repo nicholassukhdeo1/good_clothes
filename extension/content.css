@@ -68,11 +68,18 @@
   column-gap: 6px;
 }
 #gc-badge .gc-alt a {
-  color: #202124;
+  color: #1e8e3e;
   font-weight: 600;
-  text-decoration: none;
+  text-decoration: underline;
+  text-underline-offset: 2px;
 }
-#gc-badge .gc-alt a:hover { text-decoration: underline; }
+#gc-badge .gc-alt a:hover { color: #156c2e; }
+#gc-badge .gc-alt-shop {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: .03em;
+  opacity: .75;
+}
 #gc-badge .gc-alt-score {
   font-weight: 700;
   font-size: 11px;

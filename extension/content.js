@@ -98,7 +98,7 @@ function altsHtml(alts) {
     .map(
       (a) =>
         `<div class="gc-alt">` +
-        `<a href="${a.url}" target="_blank">${a.name}</a>` +
+        `<a href="${a.url}" target="_blank" class="gc-alt-link">${a.name} <span class="gc-alt-shop">Shop ↗</span></a>` +
         `<span class="gc-alt-score">${a.est_score}</span>` +
         (a.why ? `<div class="gc-alt-why">${a.why}</div>` : "") +
         `</div>`
