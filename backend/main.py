@@ -1,8 +1,10 @@
 # main.py — run with:  uvicorn main:app --reload  (from inside backend/)
 import hashlib
+import pathlib
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import HTMLResponse
 
 import cache
 import research
@@ -29,6 +31,17 @@ app.add_middleware(
 )
 
 cache.init()
+
+# Load the landing page once at startup; fall back to a tiny message if it's missing.
+try:
+    _LANDING = (pathlib.Path(__file__).parent / "landing.html").read_text(encoding="utf-8")
+except Exception:
+    _LANDING = "<h1>good_clothes API</h1><p>See /health</p>"
+
+
+@app.get("/", response_class=HTMLResponse)
+def home():
+    return _LANDING
 
 
 @app.get("/health")
