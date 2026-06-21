@@ -152,29 +152,33 @@ function parsePercentages(text) {
 }
 
 // All bare material keywords we can recognize without a percentage.
-// Order matters: more specific phrases first.
+// Order matters: more specific phrases first so "stainless steel" matches before "steel",
+// "full-grain leather" before "leather", etc.
 const BARE_KEYWORDS = [
   // Metals – specific first
   "sterling silver", "925 sterling", "925 silver", "18k gold", "14k gold", "9k gold",
   "gold-plated brass", "gold-plated steel", "gold plated", "silver plated",
   "stainless steel", "titanium", "brass", "copper", "silver", "gold", "pewter", "zinc",
-  // Leather
-  "full-grain leather", "full grain leather", "nappa leather", "nubuck leather",
-  "patent leather", "saffiano leather", "pebbled leather", "grained leather",
-  "suede leather", "lambskin leather", "calfskin leather", "genuine leather",
-  "veg tan leather", "pony hair", "shearling",
-  "leather", "suede", "nubuck",
-  // Rubber / synthetic
+  // Leather – all common synonyms SSENSE uses
+  "full-grain leather", "full grain leather",
+  "nappa leather", "nubuck leather", "patent leather", "saffiano leather",
+  "pebbled leather", "grained leather", "smooth leather", "suede leather",
+  "lambskin leather", "calfskin leather", "goatskin leather", "cowhide leather",
+  "genuine leather", "veg tan leather", "bovine leather",
+  "lambskin", "calfskin", "goatskin", "cowhide", "pigskin",
+  "pony hair", "shearling", "shearling leather",
+  "leather", "suede", "nubuck", "nappa",
+  // Rubber / synthetics
   "natural rubber", "vulcanized rubber", "rubber",
   "faux leather", "vegan leather", "pu leather",
   // Textiles (no %)
   "fleece", "denim", "tweed", "corduroy", "canvas", "felt", "velvet", "satin",
   "chiffon", "lace", "jacquard", "brocade", "jersey", "mesh",
-  // Down
+  // Down / fill
   "goose down", "duck down", "down feather", "down fill", "down",
-  // Acetate / optical
+  // Optical / specialist
   "acetate", "neoprene",
-  // Wood / other naturals
+  // Wood / naturals
   "wood", "cork", "bamboo",
 ];
 
@@ -185,7 +189,7 @@ function parseBare(text) {
   const lower = text.toLowerCase();
 
   // "Upper: Leather" / "Material: Stainless Steel" / "Shell: Nylon" patterns
-  const labelRe = /(?:upper|outer|shell|lining|sole|insole|fill|material|composition|fabric|body|hardware|closure|chain|pendant|frame|lens|strap|trim|detail)s?\s*[:–-]\s*([^,\n·•]+)/gi;
+  const labelRe = /(?:upper|outer|shell|lining|sole|insole|fill|material|composition|fabric|body|hardware|closure|chain|pendant|frame|lens|strap|trim|detail)s?\s*[:–-]\s*([^,\n·•.]{2,60})/gi;
   const labeled = [];
   let lm;
   while ((lm = labelRe.exec(text)) !== null) {

@@ -12,11 +12,13 @@ const FIBER_RE =
 // Bare material recognition — metals, leathers, fill, rubber, textiles, optical.
 // Listed longest-first so "stainless steel" matches before "steel".
 const BARE_MATERIAL_RE =
-  /\b(?:sterling silver|925 sterling|925 silver|18k gold|14k gold|9k gold|gold[- ]plated(?:\s+\w+)?|silver[- ]plated|stainless steel|full[- ]grain leather|nappa leather|patent leather|saffiano leather|grained leather|calfskin leather|lambskin leather|genuine leather|pony hair|goose down|duck down|down feather|down fill|natural rubber|vulcanized rubber|faux leather|vegan leather|pu leather|titanium|brass|copper|silver|gold|pewter|zinc|steel|rubber|leather|suede|nubuck|shearling|fleece|denim|tweed|corduroy|canvas|velvet|satin|chiffon|lace|jersey|mesh|felt|acetate|neoprene|cork|bamboo|wood|down)\b/i;
+  /\b(?:sterling silver|925 sterling|925 silver|18k gold|14k gold|9k gold|gold[- ]plated(?:\s+\w+)?|silver[- ]plated|stainless steel|full[- ]grain leather|nappa leather|patent leather|saffiano leather|grained leather|calfskin leather|lambskin leather|goatskin leather|genuine leather|pony hair|goose down|duck down|down feather|down fill|natural rubber|vulcanized rubber|faux leather|vegan leather|pu leather|titanium|brass|copper|silver|gold|pewter|zinc|steel|rubber|leather|calfskin|lambskin|goatskin|cowhide|pigskin|nappa|suede|nubuck|shearling|fleece|denim|tweed|corduroy|canvas|velvet|satin|chiffon|lace|jersey|mesh|felt|acetate|neoprene|cork|bamboo|wood|down)\b/i;
 
 // "Upper: Leather, Sole: Rubber" — labelled multi-part descriptions
+// Stops capture at comma, newline, bullet, or period so "Upper: calfskin. Sole: rubber."
+// produces two separate matches instead of one greedy one.
 const LABELLED_RE =
-  /(?:upper|outer|shell|lining|sole|insole|fill|material|composition|fabric|body|hardware|closure|chain|pendant|frame|lens|strap|trim)\s*[:–\-]\s*([^,\n·•]{2,60})/i;
+  /(?:upper|outer|shell|lining|sole|insole|fill|material|composition|fabric|body|hardware|closure|chain|pendant|frame|lens|strap|trim)\s*[:–\-]\s*([^,\n·•.]{2,60})/i;
 
 function findBrand() {
   const designer = document.querySelector('a[href*="/designers/"]');
