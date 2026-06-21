@@ -175,7 +175,11 @@ function renderBadge(state) {
       <div class="gc-row">${matLine}</div>
       <div class="gc-row">${ethLine}</div>
       ${ownLine ? `<div class="gc-row">${ownLine}</div>` : ""}
-      ${research && research.summary ? `<div class="gc-sum">${research.summary}</div>` : ""}
+      ${research && research.summary ? `
+      <div class="gc-sum-wrap">
+        <span class="gc-sum">${research.summary}</span>
+        <span class="gc-readmore" onclick="this.previousElementSibling.classList.toggle('gc-sum-open');this.textContent=this.textContent==='Read more'?'Read less':'Read more'">Read more</span>
+      </div>` : ""}
       ${sources}
       ${altsHtml(alternatives)}
     </div>`;
