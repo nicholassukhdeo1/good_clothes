@@ -4,8 +4,14 @@
 // rendering (renderBadge / the ring / breakdown / alternatives) was restyled.
 
 // ---------- 1. SCRAPE (tuned for SSENSE) ----------
+
+// Primary: "80% cotton", "100% leather", etc.
 const FIBER_RE =
-  /\b\d{1,3}\s*%\s*(?:organic |recycled |supima |pima )?(?:cotton|linen|hemp|wool|silk|cashmere|tencel|lyocell|modal|viscose|rayon|polyester|polyamide|nylon|elastane|spandex|acrylic|leather|cupro)/i;
+  /\b\d{1,3}\s*%\s*(?:organic |recycled |supima |pima )?(?:cotton|linen|hemp|wool|silk|cashmere|tencel|lyocell|modal|viscose|rayon|polyester|polyamide|nylon|elastane|spandex|acrylic|leather|suede|nubuck|cupro)/i;
+
+// Fallback for items with no percentage listing (leather boots, suede shoes, etc.)
+const BARE_MATERIAL_RE =
+  /\b(?:full[- ]grain\s+)?(?:leather|suede|nubuck|canvas|denim|tweed|corduroy)\b/i;
 
 function findBrand() {
   const designer = document.querySelector('a[href*="/designers/"]');
@@ -19,15 +25,19 @@ function findBrand() {
 
 function findComposition() {
   let best = "";
+  let bareBest = "";
   const els = document.querySelectorAll("li, p, span, div, td");
   for (const el of els) {
     if (el.children.length !== 0) continue;
     const t = el.innerText && el.innerText.trim();
-    if (t && FIBER_RE.test(t)) {
+    if (!t) continue;
+    if (FIBER_RE.test(t)) {
       if (!best || t.length < best.length) best = t;
+    } else if (!bareBest && BARE_MATERIAL_RE.test(t) && t.length < 120) {
+      bareBest = t;
     }
   }
-  return best;
+  return best || bareBest;
 }
 
 function findImage() {

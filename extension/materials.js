@@ -30,6 +30,7 @@ const FIBER_WEIGHTS = {
 const DEFAULT_WEIGHT = 40; // unknown fiber -> neutral-ish
 
 // Parse strings like "80% Cotton, 20% Polyester" into [{ fiber, pct }].
+// Falls back to bare material keywords (no %) for leather/suede items.
 function parseComposition(text) {
   if (!text) return [];
   const out = [];
@@ -39,6 +40,12 @@ function parseComposition(text) {
     const pct = parseFloat(m[1]);
     const fiber = m[2].trim().toLowerCase();
     if (pct > 0) out.push({ fiber, pct });
+  }
+  if (out.length === 0) {
+    // No percentages found — look for bare material keyword and treat as 100%
+    const bare = /\b(full[- ]grain leather|leather|suede|nubuck|canvas|denim|tweed|corduroy)\b/i;
+    const bm = text.match(bare);
+    if (bm) out.push({ fiber: bm[1].toLowerCase().replace("full-grain leather", "leather").replace("full grain leather", "leather"), pct: 100 });
   }
   return out;
 }
