@@ -114,6 +114,17 @@ function altsHtml(alts) {
 function renderBadge(state) {
   const el = ensureBadge();
   const { materials, research, final, phase, alternatives } = state;
+
+  if (phase === "loading") {
+    el.innerHTML = `
+      <div class="gc-ring" style="--c:#9aa0a6">…</div>
+      <div class="gc-body">
+        <div class="gc-title">good_clothes</div>
+        <div class="gc-row">Loading rating…</div>
+      </div>`;
+    return;
+  }
+
   const big = final != null ? final : materials && materials.score != null ? materials.score : "…";
   const ring = colorFor(typeof big === "number" ? big : null);
 
