@@ -1,6 +1,6 @@
 # good_clothes
 
-A Chrome extension that scores clothing items 0-100 on materials, ethics, and ownership — and suggests better alternatives matched to your aesthetic.
+A Chrome extension that scores clothing items 0-100 on materials, ethics, and ownership. Also suggests better alternatives matched to your aesthetic.
 
 Built at the Berkeley AI Hackathon 2026. Targets SSENSE.
 
