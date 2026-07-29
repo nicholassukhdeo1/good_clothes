@@ -10,21 +10,6 @@ materials  (local, instant, always works)
    =  worthiness score
 ```
 
-Tracks targeted: Ddoski's World (social impact) · Anthropic (built with Claude Code) · Browserbase.
-
----
-
-## ⚠️ Do these two things FIRST (in the first 15 min)
-
-1. **Verify your retailer exposes fabric in the DOM.** Open a product page, inspect the
-   brand element and the material-composition element, and confirm the fiber breakdown is
-   actually in the HTML (not hidden behind a JS tab or a separate API call). If it isn't,
-   switch retailers NOW. Then paste the two selectors into `extension/content.js` (`scrape()`).
-2. **Get the round-trip working before anything smart.** Load the extension, hit a product
-   page, and confirm: badge appears → background calls backend → a (fake) score comes back.
-   If that pipe works, the rest is downhill.
-
----
 
 ## Run it
 
