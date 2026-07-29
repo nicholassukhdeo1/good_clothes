@@ -1,54 +1,68 @@
 # good_clothes
 
-A Chrome extension that scores how worthy a clothing item is to buy (0–100), combining
-**materials** (read off the page, deterministic), **ethics**, and **ownership** (researched
-live via a Browserbase cloud browser, scored by Claude).
+A Chrome extension that scores clothing items 0-100 on materials, ethics, and ownership — and suggests better alternatives matched to your aesthetic.
+
+Built at a hackathon. Targets SSENSE.
+
+---
+
+## What it does
+
+When you open a product page, a badge appears with three scores:
+
+- **Materials** - computed locally from the fabric composition listed on the page (deterministic, no network call, always works)
+- **Ethics** - researched live by a Browserbase cloud browser scraping DuckDuckGo and Wikipedia, then scored by Claude
+- **Ownership** - same research pass; penalizes PE-owned and conglomerate brands, rewards independent ownership
+
+The three scores combine into a single 0-100 rating.
+If the item scores below 60, the badge surfaces three alternative brands that are more conscious and match your style preferences.
+
+---
+
+## Architecture
 
 ```
-materials  (local, instant, always works)
-   +  ethics + ownership  (Browserbase → Claude, cached per brand)
-   =  worthiness score
+Chrome extension (content script)
+  │
+  ├── materials.js       scores fabric composition locally — no network, always instant
+  │
+  └── background.js      relays to backend (extension can't call APIs directly)
+         │
+         ├── /research   Browserbase cloud browser → DuckDuckGo + Wikipedia → Claude synthesis
+         ├── /alternatives  Claude vision reads product photo → suggests 3 better brands
+         └── /chat       Claude Haiku powers the style onboarding conversation
 ```
 
+The backend is a FastAPI server deployed on Render.
+Keys live only in the backend — the extension ships to anyone who installs it, so no secrets touch the extension folder.
 
-## Run it
+---
 
-Backend:
+## Stack
+
+- **Extension** - Chrome MV3 (content script, service worker, `chrome.webNavigation`)
+- **Backend** - FastAPI (Python), deployed on Render
+- **AI** - Anthropic Claude (Sonnet for research synthesis + vision, Haiku for chat)
+- **Browser automation** - Browserbase + Playwright (cloud browser for scraping)
+- **Persistence** - SQLite (brand research cache), Supabase (user style preferences)
+
+---
+
+## Running locally
+
+**Backend:**
 ```bash
 cd backend
 python -m venv .venv && source .venv/bin/activate
 pip install -r requirements.txt
-cp .env.example .env        # then paste your real keys into .env
-uvicorn main:app --reload   # http://localhost:8000
+cp .env.example .env   # fill in your API keys
+uvicorn main:app --reload
 ```
-(You connect to Browserbase's remote browser over CDP, so you do NOT need a local
-`playwright install` for chromium.)
 
-Extension:
-1. `chrome://extensions` → enable Developer mode → **Load unpacked** → pick `extension/`.
-2. Open a product page on your supported retailer. Badge appears bottom-right.
-
-
----
-
-## Where to spend your hand-written effort
-
-Let Claude Code generate boilerplate. Your judgment goes into:
-- `extension/materials.js` — the fiber rubric (be ready to defend it).
-- `backend/synthesize.py` — the Claude prompt + JSON schema.
-- `backend/research.py` — which sources you browse (DuckDuckGo + Wikipedia are stubbed;
-  a brand's Good On You page is a strong add).
-- The demo: pick one product that scores LOW and one that scores HIGH for contrast.
-
-
-## Stretch (true "beyond a prompt" depth)
-Write each brand assessment back as long-term memory and retrieve similar brands — turns
-the tool into something that gets smarter the more you browse.
-
-## Architecture note
-The extension does materials + the final combine; the backend does ONLY brand research.
-This split means each layer is independently demoable and a Browserbase failure never
-takes down the visible score.
+**Extension:**
+1. Go to `chrome://extensions` and enable Developer mode
+2. Click Load unpacked and select the `extension/` folder
+3. Open any product page on SSENSE — the badge appears bottom-right
 
 ---
 
@@ -56,14 +70,12 @@ takes down the visible score.
 
 No API keys or network access needed — all external calls are mocked.
 
-Backend (cache, scoring synthesis, category inference, style-pref logic):
 ```bash
-cd backend
-pip install -r requirements.txt
-pytest tests/ -v
+cd backend && pytest tests/ -v
 ```
 
-Materials scoring (extension):
 ```bash
 node extension/tests/test_materials.js
 ```
+
+See [`CODEBASE.md`](CODEBASE.md) for a file-by-file breakdown of the project.
