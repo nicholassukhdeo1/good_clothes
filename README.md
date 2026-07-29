@@ -28,19 +28,6 @@ Extension:
 1. `chrome://extensions` → enable Developer mode → **Load unpacked** → pick `extension/`.
 2. Open a product page on your supported retailer. Badge appears bottom-right.
 
----
-
-## Demo safety
-
-- **Pre-warm the cache for your demo brand** so the live demo is instant and never depends
-  on Browserbase behaving on stage:
-  ```bash
-  curl -X POST localhost:8000/research \
-    -H "Content-Type: application/json" -d '{"brand":"Uniqlo"}'
-  ```
-  Run it once; the result is cached in `cache.db`. On stage you hit cache.
-- Materials scoring is local, so the badge shows a real score even with the backend off —
-  that's your guaranteed fallback demo.
 
 ---
 
@@ -53,12 +40,6 @@ Let Claude Code generate boilerplate. Your judgment goes into:
   a brand's Good On You page is a strong add).
 - The demo: pick one product that scores LOW and one that scores HIGH for contrast.
 
-## Build order (matches your schedule)
-- **Block 1:** badge → background → backend → fake score. Kill CORS/manifest issues here.
-- **Block 2:** real DOM scrape + materials score. This alone is a complete submission.
-- **Block 3:** Browserbase research + Claude synthesis (the big swing).
-- **11pm:** dry run, `git tag` the working version as your fallback.
-- **Block 4:** sources display, summary, polish. Stretch: "here are 3 better-scoring alternatives."
 
 ## Stretch (true "beyond a prompt" depth)
 Write each brand assessment back as long-term memory and retrieve similar brands — turns
