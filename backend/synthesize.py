@@ -19,24 +19,24 @@ the strongest sources you were given."""
 
 
 def synthesize(brand: str, evidence: dict) -> dict:
-    msg = client.messages.create(
-        model="claude-sonnet-4-6",
-        max_tokens=600,
-        system=SYSTEM,
-        messages=[
-            {
-                "role": "user",
-                "content": (
-                    f"Brand: {brand}\n\n"
-                    f"Evidence:\n{evidence['text']}\n\n"
-                    f"Candidate sources:\n{json.dumps(evidence['sources'])}"
-                ),
-            }
-        ],
-    )
-    raw = "".join(b.text for b in msg.content if b.type == "text").strip()
-    raw = raw.replace("```json", "").replace("```", "").strip()
     try:
+        msg = client.messages.create(
+            model="claude-sonnet-4-6",
+            max_tokens=600,
+            system=SYSTEM,
+            messages=[
+                {
+                    "role": "user",
+                    "content": (
+                        f"Brand: {brand}\n\n"
+                        f"Evidence:\n{evidence['text']}\n\n"
+                        f"Candidate sources:\n{json.dumps(evidence['sources'])}"
+                    ),
+                }
+            ],
+        )
+        raw = "".join(b.text for b in msg.content if b.type == "text").strip()
+        raw = raw.replace("```json", "").replace("```", "").strip()
         data = json.loads(raw)
         data["ethics_score"] = int(data["ethics_score"])
         data["ownership_score"] = int(data["ownership_score"])

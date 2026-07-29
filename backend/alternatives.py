@@ -35,9 +35,9 @@ def _fetch_image_b64(url: str):
 _CATEGORIES = [
     ("jeans", ["jean", "denim"]),
     ("t-shirt", ["t-shirt", "tee", " tshirt"]),
-    ("shirt", ["shirt", "blouse"]),
-    ("sweater", ["sweater", "knit", "jumper", "cardigan"]),
     ("hoodie", ["hoodie", "sweatshirt"]),
+    ("sweater", ["sweater", "knit", "jumper", "cardigan"]),
+    ("shirt", ["shirt", "blouse"]),
     ("vest", ["vest", "gilet"]),
     ("jacket", ["jacket", "coat", "parka", "blazer", "puffer", "down"]),
     ("pants", ["trouser", "pant", "chino"]),

@@ -49,3 +49,21 @@ the tool into something that gets smarter the more you browse.
 The extension does materials + the final combine; the backend does ONLY brand research.
 This split means each layer is independently demoable and a Browserbase failure never
 takes down the visible score.
+
+---
+
+## Tests
+
+No API keys or network access needed — all external calls are mocked.
+
+Backend (cache, scoring synthesis, category inference, style-pref logic):
+```bash
+cd backend
+pip install -r requirements.txt
+pytest tests/ -v
+```
+
+Materials scoring (extension):
+```bash
+node extension/tests/test_materials.js
+```
