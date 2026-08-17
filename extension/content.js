@@ -318,26 +318,45 @@ function startRun() {
   chrome.storage.sync.get({ gc_pref: window.GC_DEFAULT_PREF }, ({ gc_pref }) => run(gc_pref));
 }
 
-if (/\/product\//.test(location.pathname)) startRun();
+// Two independent triggers fire on the same SPA navigation: the webNavigation
+// message from the background worker, and the polling fallback below. Whichever
+// arrives first wins — without this guard a single navigation ran the pipeline
+// twice, doubling the /research and /alternatives calls.
+let _lastUrl = location.href;
+let _runUrl = "";
+let _navTimer = null;
+
+function scheduleRun() {
+  const url = location.href;
+  if (url === _runUrl) return;
+  _runUrl = url;
+  _lastUrl = url; // keep the poller in sync so it doesn't re-trigger for this URL
+  clearTimeout(_navTimer);
+  _navTimer = setTimeout(startRun, 600);
+}
+
+function clearBadge() {
+  const badge = document.getElementById("gc-badge");
+  if (badge) badge.remove();
+  if (_loadTimer) { clearInterval(_loadTimer); _loadTimer = null; }
+  clearTimeout(_navTimer);
+  _navTimer = null;
+  _runUrl = "";
+}
+
+if (/\/product\//.test(location.pathname)) {
+  _runUrl = location.href; // claim this URL so a same-page GC_NAV can't re-run it
+  startRun();
+}
 
 chrome.runtime.onMessage.addListener((msg) => {
-  if (msg.type === "GC_NAV") {
-    setTimeout(startRun, 600);
-  } else if (msg.type === "GC_NAV_AWAY") {
-    const badge = document.getElementById("gc-badge");
-    if (badge) badge.remove();
-    if (_loadTimer) { clearInterval(_loadTimer); _loadTimer = null; }
-  }
+  if (msg.type === "GC_NAV") scheduleRun();
+  else if (msg.type === "GC_NAV_AWAY") clearBadge();
 });
 
-let _lastUrl = location.href;
 setInterval(() => {
   if (location.href === _lastUrl) return;
   _lastUrl = location.href;
-  if (/\/product\//.test(location.href)) {
-    setTimeout(startRun, 600);
-  } else {
-    const badge = document.getElementById("gc-badge");
-    if (badge) badge.remove();
-  }
+  if (/\/product\//.test(location.href)) scheduleRun();
+  else clearBadge();
 }, 500);
