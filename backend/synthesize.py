@@ -35,6 +35,7 @@ def synthesize(brand: str, evidence: dict) -> dict:
                 }
             ],
         )
+        print(f"[usage] synthesize in={msg.usage.input_tokens} out={msg.usage.output_tokens}")
         raw = "".join(b.text for b in msg.content if b.type == "text").strip()
         raw = raw.replace("```json", "").replace("```", "").strip()
         data = json.loads(raw)

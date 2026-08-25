@@ -143,6 +143,7 @@ def suggest_alternatives(
             system=SYSTEM,
             messages=[{"role": "user", "content": content}],
         )
+        print(f"[usage] alternatives in={msg.usage.input_tokens} out={msg.usage.output_tokens}")
         raw = "".join(b.text for b in msg.content if b.type == "text").strip()
         raw = raw.replace("```json", "").replace("```", "").strip()
         data = json.loads(raw)
