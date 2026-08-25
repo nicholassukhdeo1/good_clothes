@@ -2,20 +2,71 @@
 <html>
   <head>
     <meta charset="utf-8" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700;800&family=Newsreader:ital,opsz,wght@0,18..72,400;0,18..72,500;1,18..72,400&display=swap" rel="stylesheet" />
     <style>
-      body { width: 240px; margin: 0; padding: 14px; font-family: -apple-system, system-ui, sans-serif; font-size: 13px; }
-      h1 { font-size: 14px; margin: 0 0 8px; }
-      #out { color: #3c4043; }
-      .muted { color: #80868b; }
-      .pref-row { margin-top: 12px; padding-top: 10px; border-top: 1px solid #ececec; font-size: 12px; color: #5f6368; }
-      .pref-row a { color: #1a73e8; text-decoration: none; cursor: pointer; }
-      .pref-row a:hover { text-decoration: underline; }
+      :root {
+        --ink-900: #1a1916; --ink-700: #44423c; --ink-500: #6f6c63;
+        --ink-400: #908d82; --ink-100: #efece4; --accent: #2f5d3a;
+        --serif: "Newsreader", Georgia, serif;
+        --sans: "Archivo", system-ui, -apple-system, sans-serif;
+      }
+      * { box-sizing: border-box; }
+      body {
+        width: 240px; margin: 0; padding: 16px;
+        font-family: var(--sans); font-size: 13px; color: var(--ink-900); background: #fff;
+      }
+      .wordmark { font-weight: 800; font-size: 14px; letter-spacing: 0.01em; }
+      .wordmark i { font-style: normal; color: var(--accent); }
+      .muted { color: var(--ink-500); line-height: 1.5; }
+      #out { margin-top: 14px; }
+      .hero { display: flex; align-items: center; gap: 12px; }
+      .ring-wrap { position: relative; flex: 0 0 auto; }
+      .ring-num {
+        position: absolute; inset: 0; display: flex; align-items: center; justify-content: center;
+        font-family: var(--serif); letter-spacing: -0.01em; line-height: 1;
+      }
+      .verdict { font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--ink-400); font-weight: 600; }
+      .brand { font-family: var(--serif); font-size: 16px; line-height: 1.2; margin-top: 2px; }
+      .divider { height: 1px; background: var(--ink-100); margin: 13px 0; }
+      .metric { margin-bottom: 10px; }
+      .metric:last-child { margin-bottom: 0; }
+      .metric-top { display: flex; align-items: baseline; justify-content: space-between; margin-bottom: 5px; }
+      .metric-label { font-size: 11px; letter-spacing: 0.14em; text-transform: uppercase; font-weight: 600; color: var(--ink-700); }
+      .metric-val { font-size: 12px; color: var(--ink-400); font-variant-numeric: tabular-nums; }
+      .metric-val b { color: var(--ink-900); font-weight: 600; }
+      .bar { height: 3px; border-radius: 2px; background: var(--ink-100); overflow: hidden; }
+      .bar > span { display: block; height: 100%; border-radius: 2px; }
+      .alts-h { margin-top: 12px; font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase; font-weight: 700; color: var(--accent); }
+      .alt { margin-top: 8px; }
+      .alt a { color: var(--ink-900); font-weight: 600; text-decoration: none; }
+      .alt a:hover { color: var(--accent); }
+      .alt-why { color: var(--ink-500); font-size: 11.5px; line-height: 1.4; margin-top: 2px; }
+      .pref-row {
+        margin-top: 14px; padding-top: 12px; border-top: 1px solid var(--ink-100);
+        display: flex; align-items: center; justify-content: space-between; gap: 8px;
+      }
+      .pref-lane-label { font-size: 9.5px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--ink-400); font-weight: 600; }
+      #pref { font-size: 12.5px; color: var(--ink-900); font-weight: 500; margin-top: 2px; }
+      #change {
+        border: 0; background: transparent; cursor: pointer; flex: 0 0 auto;
+        font-family: var(--sans); font-size: 12px; font-weight: 700; color: var(--accent);
+        padding: 7px 10px; border-radius: 8px;
+      }
+      #change:hover { background: #e8efe7; }
     </style>
   </head>
   <body>
-    <h1>good_clothes</h1>
-    <div id="out" class="muted">Open a supported product page to see a score.</div>
-    <div class="pref-row">Style: <b id="pref">…</b> · <a id="change">change</a></div>
+    <div class="wordmark">good<i>_</i>clothes</div>
+    <div id="out" class="muted">Open a supported product page to see a worthiness score.</div>
+    <div class="pref-row">
+      <div>
+        <div class="pref-lane-label">Style lane</div>
+        <div id="pref">…</div>
+      </div>
+      <button id="change">change</button>
+    </div>
     <script src="prefs.js"></script>
     <script src="popup.js"></script>
   </body>
