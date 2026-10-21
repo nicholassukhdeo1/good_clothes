@@ -17,6 +17,7 @@ exactly one thing.
 """
 
 import argparse
+import contextlib
 import sys
 from unittest.mock import patch
 
@@ -48,6 +49,23 @@ def offline() -> dict:
     return {"containment": {"baseline": base, "hardened": hard}, "detection": detect}
 
 
+def _arm_context(arm: str):
+    """The single thing that differs between the two arms.
+
+    The hardened arm patches nothing, because hardened *is* the production path.
+    Patching it with harness.render_hardened would replace evidence.wrap with a
+    function whose body calls evidence.wrap - unbounded recursion, swallowed by
+    synthesize's broad `except Exception` into a 50/50 fallback. The eval then
+    reported all 30 hardened runs as failed and measured nothing, while the
+    baseline arm beside it ran fine.
+    """
+    import synthesize
+
+    if arm == "baseline":
+        return patch.object(synthesize.evidence, "wrap", harness.render_baseline)
+    return contextlib.nullcontext()
+
+
 def _run_arm(arm: str) -> dict:
     """One live pass over every attack page, with one rendering."""
     import synthesize
@@ -55,11 +73,7 @@ def _run_arm(arm: str) -> dict:
     outcomes = []
     for case in corpus.ATTACKS:
         browser = harness.CorpusBrowser(case["page"])
-        if arm == "baseline":
-            ctx = patch.object(synthesize.evidence, "wrap", harness.render_baseline)
-        else:
-            ctx = patch.object(synthesize.evidence, "wrap", harness.render_hardened)
-        with ctx:
+        with _arm_context(arm):
             result = synthesize.synthesize(case["id"], browser=browser)
 
         # A run that degraded to the 50/50 fallback measured nothing: the loop

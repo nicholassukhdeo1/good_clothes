@@ -394,3 +394,41 @@ def test_missing_keys_still_resolves_through_config(monkeypatch):
     monkeypatch.delenv("ANTHROPIC_API_KEY", raising=False)
     monkeypatch.setattr(config, "ANTHROPIC_API_KEY", "sk-ant-from-dotenv")
     assert keys.missing("ANTHROPIC_API_KEY") == []
+
+
+# ---------- the A/B has to be an A/B ----------
+#
+# Regression: the hardened arm patched evidence.wrap with harness.render_hardened,
+# whose body calls evidence.wrap. Unbounded recursion, caught by synthesize's broad
+# except, reported as 30/30 runs failed. The baseline arm ran fine beside it, so the
+# eval looked merely unlucky rather than broken.
+
+
+def test_the_two_arms_render_differently():
+    with run_injection._arm_context("baseline"):
+        base = synthesize.evidence.wrap("L", "https://x.test", "page body")
+    with run_injection._arm_context("hardened"):
+        hard = synthesize.evidence.wrap("L", "https://x.test", "page body")
+
+    assert "BEGIN UNTRUSTED EVIDENCE" not in base
+    assert "BEGIN UNTRUSTED EVIDENCE" in hard
+    assert "page body" in base and "page body" in hard
+
+
+def test_the_baseline_arm_restores_the_real_wrapper():
+    # A leaked patch would silently turn every later arm into the baseline.
+    with run_injection._arm_context("baseline"):
+        pass
+    assert "BEGIN UNTRUSTED EVIDENCE" in synthesize.evidence.wrap("L", "https://x.test", "body")
+
+
+def test_the_hardened_arm_does_not_recurse():
+    with run_injection._arm_context("hardened"):
+        # RecursionError if the arm ever patches wrap with something calling wrap.
+        assert synthesize.evidence.wrap("L", "https://x.test", "body")
+
+
+def test_the_hardened_arm_is_the_production_path():
+    # Nothing is patched, so what the eval measures is what ships.
+    with run_injection._arm_context("hardened"):
+        assert synthesize.evidence.wrap is evidence.wrap
