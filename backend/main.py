@@ -7,7 +7,6 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import HTMLResponse
 
 import cache
-import research
 import synthesize
 import alternatives
 import chat as chat_module
@@ -64,8 +63,9 @@ def research_brand(req: ResearchRequest):
         hit["cached"] = True
         return hit
 
-    evidence = research.gather_brand_evidence(brand)
-    result = synthesize.synthesize(brand, evidence)
+    # Claude runs the research itself: it calls research.gather_brand_evidence as a
+    # tool, as many times as it needs, inside synthesize's loop.
+    result = synthesize.synthesize(brand)
     result["brand"] = brand
     result["cached"] = False
 

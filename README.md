@@ -11,7 +11,7 @@ Built at the Berkeley AI Hackathon 2026. Targets SSENSE.
 When you open a product page, a badge appears with three scores:
 
 - **Materials** - computed locally from the fabric composition listed on the page (deterministic, no network call, always works)
-- **Ethics** - researched live by a Browserbase cloud browser scraping DuckDuckGo and Wikipedia, then scored by Claude
+- **Ethics** - Claude researches the brand itself: it calls a search tool with its own queries, reads the pages a Browserbase cloud browser returns, searches again when the evidence is thin, then scores
 - **Ownership** - same research pass; penalizes PE-owned and conglomerate brands, rewards independent ownership
 
 The three scores combine into a single 0-100 rating.
@@ -28,7 +28,7 @@ Chrome extension (content script)
   │
   └── background.js      relays to backend (extension can't call APIs directly)
          │
-         ├── /research   Browserbase cloud browser → DuckDuckGo + Wikipedia → Claude synthesis
+         ├── /research   Claude calls a search tool in a loop → Browserbase cloud browser → score
          ├── /alternatives  Claude vision reads product photo → suggests 3 better brands
          └── /chat       Claude Haiku powers the style onboarding conversation
 ```
@@ -42,7 +42,7 @@ Keys live only in the backend — the extension ships to anyone who installs it,
 
 - **Extension** - Chrome MV3 (content script, service worker, `chrome.webNavigation`)
 - **Backend** - FastAPI (Python), deployed on Render
-- **AI** - Anthropic Claude (Sonnet for research synthesis + vision, Haiku for chat)
+- **AI** - Anthropic Claude (Sonnet drives the research tool loop + vision, Haiku for chat)
 - **Browser automation** - Browserbase + Playwright (cloud browser for scraping)
 - **Persistence** - SQLite (brand research cache), Supabase (user style preferences)
 
