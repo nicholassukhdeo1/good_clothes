@@ -9,9 +9,16 @@
 # This also keeps CI working unchanged: load_dotenv() does not overwrite a real
 # environment variable, so a key supplied by the runner reaches config too.
 
-import config
-
 
 def missing(*names: str) -> list:
-    """Which of `names` config could not resolve, in the order given."""
+    """Which of `names` config could not resolve, in the order given.
+
+    config is imported here rather than at module scope on purpose. It pulls in
+    python-dotenv, and the offline tier of the injection eval deliberately runs on
+    a bare interpreter with nothing installed - importing it up here put
+    `ModuleNotFoundError: No module named 'dotenv'` in front of a run that needs
+    no keys and no dependencies at all.
+    """
+    import config
+
     return [n for n in names if not getattr(config, n, "")]

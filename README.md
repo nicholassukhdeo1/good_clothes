@@ -71,7 +71,7 @@ uvicorn main:app --reload
 No API keys or network access needed for the unit suites - all external calls are mocked.
 
 ```bash
-cd backend && pytest tests/ -q          # 262 tests
+cd backend && pytest tests/ -q          # 264 tests
 node extension/tests/test_materials.js  # 17 tests
 cd backend && ruff check .
 ```
