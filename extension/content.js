@@ -88,6 +88,14 @@ function scrape() {
 }
 
 // ---------- 2. BADGE ----------
+
+// How long a cold brand lookup takes, for the loading countdown. Claude researches
+// the brand itself now - a few concurrent page loads plus three or four model turns -
+// so this is measured, not guessed: 16s, 20s and 26s across three brands. Overshooting
+// is handled (the label switches to a live "still working" counter), undershooting just
+// makes the badge look stuck, so this sits near the slow end.
+const RESEARCH_ETA_S = 25;
+
 function ensureBadge() {
   let el = document.getElementById("gc-badge");
   if (!el) {
@@ -199,12 +207,12 @@ function renderBadge(state) {
       `<div class="gc-hero">${ringSvg(null, 56, true)}` +
       `<div class="gc-hero-info"><div class="gc-verdict">Researching</div>` +
       `<div class="gc-brand">${state.brand || "…"}</div></div></div>` +
-      `<div class="gc-loading">Researching brand… <span class="gc-eta" id="gc-eta">est. 15s</span></div>`;
+      `<div class="gc-loading">Researching brand… <span class="gc-eta" id="gc-eta">est. ${RESEARCH_ETA_S}s</span></div>`;
     _loadTimer = setInterval(() => {
       const etaEl = document.getElementById("gc-eta");
       if (!etaEl) { clearInterval(_loadTimer); return; }
       const elapsed = Math.round((Date.now() - _loadStart) / 1000);
-      const rem = Math.max(0, 15 - elapsed);
+      const rem = Math.max(0, RESEARCH_ETA_S - elapsed);
       etaEl.textContent = rem > 0 ? `est. ${rem}s remaining` : `still working… (${elapsed}s)`;
     }, 1000);
     return;

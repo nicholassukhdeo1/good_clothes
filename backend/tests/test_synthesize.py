@@ -30,6 +30,19 @@ def _tool_msg(query="Patagonia factory conditions", source="web", tool_id="toolu
     return _msg([block], "tool_use")
 
 
+def _multi_tool_msg(*pairs):
+    """One assistant turn asking for several searches at once."""
+    blocks = []
+    for i, (query, source) in enumerate(pairs, 1):
+        block = MagicMock()
+        block.type = "tool_use"
+        block.id = f"toolu_{i}"
+        block.name = research.TOOL["name"]
+        block.input = {"query": query, "source": source}
+        blocks.append(block)
+    return _msg(blocks, "tool_use")
+
+
 SCORE = {
     "ethics_score": 72,
     "ownership_score": 60,
@@ -39,22 +52,39 @@ SCORE = {
 
 
 class FakeBrowser:
-    """Stands in for EvidenceBrowser: records queries, returns canned page text."""
+    """Stands in for EvidenceBrowser: records each batch, returns canned page text.
 
-    def __init__(self, text="Evidence about the brand.", fail=False):
+    `fail` fails every request; `fail_queries` fails only the ones whose query
+    contains one of those substrings, the way one dead page in a concurrent batch
+    comes back as an Exception beside its healthy siblings.
+    """
+
+    def __init__(self, text="Evidence about the brand.", fail=False, fail_queries=()):
         self.text = text
         self.fail = fail
-        self.queries = []
+        self.fail_queries = fail_queries
+        self.batches = []  # one entry per search_all call
+        self.queries = []  # flattened, in the order they were requested
         self.closed = False
 
-    def search(self, query, source):
-        self.queries.append((query, source))
-        if self.fail:
-            raise RuntimeError("navigation timeout")
-        return {
-            "text": self.text,
-            "source": {"label": f"Search: {query}", "url": "https://example.com/evidence"},
-        }
+    def search_all(self, requests):
+        self.batches.append(list(requests))
+        self.queries.extend(requests)
+        out = []
+        for query, _source in requests:
+            if self.fail or any(f in query for f in self.fail_queries):
+                out.append(RuntimeError("navigation timeout"))
+            else:
+                out.append(
+                    {
+                        "text": self.text,
+                        "source": {
+                            "label": f"Search: {query}",
+                            "url": "https://example.com/evidence",
+                        },
+                    }
+                )
+        return out
 
     def close(self):
         self.closed = True
@@ -248,3 +278,132 @@ def test_caller_supplied_browser_is_left_open():
     with _patch_claude(_text_msg(json.dumps(SCORE))):
         synthesize.synthesize("Patagonia", browser=browser)
     assert browser.closed is False
+
+
+# ---------- concurrency ----------
+
+
+def test_one_turns_calls_go_out_in_a_single_batch():
+    # The point of the concurrent loader: two searches asked for in one turn are
+    # loaded together, not one page after another.
+    browser = FakeBrowser()
+    turn = _multi_tool_msg(("Everlane labor", "web"), ("Everlane owner", "wikipedia"))
+    with _patch_claude(turn, _text_msg(json.dumps(SCORE))):
+        synthesize.synthesize("Everlane", browser=browser)
+    assert browser.batches == [
+        [("Everlane labor", "web"), ("Everlane owner", "wikipedia")]
+    ]
+
+
+def test_every_call_in_a_turn_gets_its_own_result():
+    # The API requires a tool_result per tool_use, matched by id.
+    browser = FakeBrowser()
+    turn = _multi_tool_msg(("Everlane labor", "web"), ("Everlane owner", "wikipedia"))
+    with _patch_claude(turn, _text_msg(json.dumps(SCORE))) as create:
+        synthesize.synthesize("Everlane", browser=browser)
+    results = create.call_args_list[1].kwargs["messages"][2]["content"]
+    assert [r["tool_use_id"] for r in results] == ["toolu_1", "toolu_2"]
+
+
+def test_one_dead_page_does_not_sink_the_rest_of_the_batch():
+    browser = FakeBrowser(fail_queries=("owner",))
+    turn = _multi_tool_msg(("Everlane labor", "web"), ("Everlane owner", "wikipedia"))
+    with _patch_claude(turn, _text_msg(json.dumps(SCORE))) as create:
+        result = synthesize.synthesize("Everlane", browser=browser)
+
+    results = create.call_args_list[1].kwargs["messages"][2]["content"]
+    assert results[0].get("is_error") is None
+    assert results[1]["is_error"] is True
+    # The healthy page is still evidence, and still a usable source.
+    assert result["ethics_score"] == 72
+
+
+def test_calls_beyond_the_budget_are_refused_without_loading():
+    # A turn that asks for more searches than remain: the extras get a refusal
+    # result, and no page is loaded for them.
+    browser = FakeBrowser()
+    turn = _multi_tool_msg(*[(f"q{i}", "web") for i in range(1, 8)])
+    with _patch_claude(turn, _text_msg(json.dumps(SCORE))) as create:
+        synthesize.synthesize("Everlane", browser=browser)
+
+    assert len(browser.queries) == synthesize.MAX_TOOL_CALLS
+    results = create.call_args_list[1].kwargs["messages"][2]["content"]
+    refusals = [r for r in results if r.get("is_error") and "budget" in r["content"]]
+    assert len(refusals) == 7 - synthesize.MAX_TOOL_CALLS
+    # Still one result per call, or the API rejects the turn.
+    assert len([r for r in results if r["type"] == "tool_result"]) == 7
+
+
+# ---------- the enforced response shape ----------
+
+
+def test_schema_is_sent_on_every_request():
+    # The API enforces the answer's shape, which is what stops the model narrating.
+    browser = FakeBrowser()
+    with _patch_claude(_tool_msg(), _text_msg(json.dumps(SCORE))) as create:
+        synthesize.synthesize("Everlane", browser=browser)
+    for call in create.call_args_list:
+        assert call.kwargs["output_config"] == {"format": synthesize.SCORE_FORMAT}
+
+
+def test_schema_requires_every_field_the_badge_reads():
+    schema = synthesize.SCORE_FORMAT["schema"]
+    assert sorted(schema["required"]) == ["ethics_score", "ownership_score", "sources", "summary"]
+    assert schema["additionalProperties"] is False
+
+
+def test_prose_before_a_fenced_block_is_still_parsed():
+    # Regression: measured on Shein. The model narrated its reasoning, then emitted
+    # a fenced JSON block, and the whole scored answer was thrown away for a 50/50.
+    narrated = (
+        "I now have sufficient evidence to score Shein. Here is my assessment:\n\n"
+        "**Ethics:** Multiple investigations document 75-hour workweeks.\n\n"
+        "```json\n"
+        '{"ethics_score": 6, "ownership_score": 10, "summary": "Repeatedly cited for '
+        '75-hour weeks and sub-living wages.", "sources": [{"label": "BBC", "url": '
+        '"https://example.com/bbc"}]}\n'
+        "```"
+    )
+    with _patch_claude(_text_msg(narrated)):
+        result = synthesize.synthesize("Shein", browser=FakeBrowser())
+    assert result["ethics_score"] == 6
+    assert result["ownership_score"] == 10
+    assert result["sources"] == [{"label": "BBC", "url": "https://example.com/bbc"}]
+
+
+def test_prose_with_no_json_at_all_still_falls_back():
+    with _patch_claude(_text_msg("I could not find enough to score this brand.")):
+        result = synthesize.synthesize("Nowhere", browser=FakeBrowser())
+    assert result["ethics_score"] == 50
+
+
+# ---------- sources have to be real, clickable links ----------
+
+
+def test_scheme_less_urls_are_made_absolute():
+    # Measured on Allbirds: DuckDuckGo prints result URLs without a scheme, the
+    # model cites them verbatim, and the badge's href then resolves against the
+    # shop's own domain.
+    payload = dict(SCORE, sources=[{"label": "Eco-Stylist", "url": "www.eco-stylist.com/allbirds"}])
+    with _patch_claude(_text_msg(json.dumps(payload))):
+        result = synthesize.synthesize("Allbirds", browser=FakeBrowser())
+    assert result["sources"] == [
+        {"label": "Eco-Stylist", "url": "https://www.eco-stylist.com/allbirds"}
+    ]
+
+
+def test_absolute_urls_are_left_alone():
+    payload = dict(SCORE, sources=[{"label": "BBC", "url": "http://bbc.co.uk/x"}])
+    with _patch_claude(_text_msg(json.dumps(payload))):
+        result = synthesize.synthesize("Brand", browser=FakeBrowser())
+    assert result["sources"][0]["url"] == "http://bbc.co.uk/x"
+
+
+def test_unusable_sources_are_dropped():
+    payload = dict(SCORE, sources=[{"label": "none", "url": "N/A"}, {"label": "", "url": ""}])
+    with _patch_claude(_tool_msg(), _text_msg(json.dumps(payload))):
+        result = synthesize.synthesize("Brand", browser=FakeBrowser())
+    # Nothing citable survived, so fall back to what the tool actually loaded.
+    assert result["sources"] == [
+        {"label": "Search: Patagonia factory conditions", "url": "https://example.com/evidence"}
+    ]
