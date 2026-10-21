@@ -25,7 +25,7 @@ import sys
 import time
 
 from evals import brands as brand_list
-from evals import metrics, report
+from evals import keys, metrics, report
 
 
 def run_brand(name: str, n: int) -> dict:
@@ -42,8 +42,14 @@ def run_brand(name: str, n: int) -> dict:
             continue
         took = time.perf_counter() - started
         elapsed.append(took)
+        # A fallback is the pipeline giving up, not an opinion about the brand.
+        # It is counted, but it must not enter the spread: 50/50 from a failed
+        # run would pull the mean toward the middle and make a wobbly brand look
+        # stable.
         if metrics.is_fallback(result, synthesize.FALLBACK_SUMMARY):
             fallbacks += 1
+            print(f"    run {i}: fallback (50/50)  {took:.1f}s")
+            continue
         ethics.append(result.get("ethics_score"))
         ownership.append(result.get("ownership_score"))
         print(f"    run {i}: ethics={result.get('ethics_score'):<4} "
@@ -52,6 +58,7 @@ def run_brand(name: str, n: int) -> dict:
     return {
         "brand": name,
         "runs": n,
+        "scored": len(ethics),
         "ethics": metrics.summarize(ethics),
         "ownership": metrics.summarize(ownership),
         "fallbacks": fallbacks,
@@ -68,9 +75,9 @@ def main() -> int:
     ap.add_argument("--no-save", action="store_true")
     args = ap.parse_args()
 
-    import os
-    missing = [k for k in ("ANTHROPIC_API_KEY", "BROWSERBASE_API_KEY", "BROWSERBASE_PROJECT_ID")
-               if not os.environ.get(k)]
+    missing = keys.missing(
+        "ANTHROPIC_API_KEY", "BROWSERBASE_API_KEY", "BROWSERBASE_PROJECT_ID"
+    )
     if missing:
         print(f"missing keys: {', '.join(missing)}\n"
               f"This eval measures the real pipeline against the real web and cannot "
