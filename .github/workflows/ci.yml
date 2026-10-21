@@ -26,6 +26,10 @@ on:
         description: "Run the live injection A/B against the real model"
         type: boolean
         default: true
+      evidence_eval:
+        description: "Also run the evidence eval (92 research passes, slow)"
+        type: boolean
+        default: false
 
 jobs:
   checks:
@@ -110,6 +114,20 @@ jobs:
           BROWSERBASE_API_KEY: unused-by-this-eval
           BROWSERBASE_PROJECT_ID: unused-by-this-eval
         run: python -m evals.run_injection --live | tee -a "$GITHUB_STEP_SUMMARY"
+
+      - name: Evidence eval (paired A/B)
+        # Two research passes per case per arm, 23 cases, two arms. Far too slow
+        # for a nightly, so it runs only when someone asks for it.
+        if: >-
+          steps.key.outputs.present == 'true' &&
+          github.event_name == 'workflow_dispatch' &&
+          inputs.evidence_eval
+        working-directory: backend
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          BROWSERBASE_API_KEY: unused-by-this-eval
+          BROWSERBASE_PROJECT_ID: unused-by-this-eval
+        run: python -m evals.run_evidence | tee -a "$GITHUB_STEP_SUMMARY"
 
       - name: Upload results
         if: steps.key.outputs.present == 'true'
