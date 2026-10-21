@@ -1,5 +1,6 @@
 # config.py — loads secrets from .env. Keys live ONLY here, never in the extension.
 import os
+
 from dotenv import load_dotenv
 
 load_dotenv()

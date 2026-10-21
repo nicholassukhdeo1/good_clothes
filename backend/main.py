@@ -6,20 +6,20 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import HTMLResponse
 
-import cache
-import synthesize
 import alternatives
+import cache
 import chat as chat_module
 import db
+import synthesize
 from models import (
-    ResearchRequest,
-    ResearchResponse,
     AlternativesRequest,
     AlternativesResponse,
     ChatRequest,
     ChatResponse,
-    PrefSetRequest,
     PrefResponse,
+    PrefSetRequest,
+    ResearchRequest,
+    ResearchResponse,
 )
 
 app = FastAPI(title="good_clothes")

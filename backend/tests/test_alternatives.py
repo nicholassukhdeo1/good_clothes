@@ -1,6 +1,5 @@
 import alternatives
 
-
 # ---- infer_category ----
 
 def test_jeans():
