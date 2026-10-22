@@ -5,7 +5,7 @@ What is measured in this project, how, and what the numbers currently are.
 Run everything:
 
 ```bash
-cd backend && pytest tests/ -q          # 262 tests, no keys, no network
+cd backend && pytest tests/ -q          # 264 tests, no keys, no network
 node extension/tests/test_materials.js  # 17 tests, Node built-ins only
 cd backend && ruff check .
 cd backend && python -m evals.run_injection --check
@@ -153,6 +153,15 @@ The same correction applies to the variance eval: a fallback is the pipeline giv
 up, not an opinion about the brand, so it is counted but kept out of the spread,
 where a 50 would otherwise drag a wobbly brand toward looking stable.
 
+**And the fix for the first one broke the offline tier.**
+`keys.py` imported `config` at module scope, `config` imports python-dotenv, and
+`python -m evals.run_injection` then died with `ModuleNotFoundError: No module
+named 'dotenv'` before printing anything - on the one tier whose whole point is
+that it needs nothing.
+The import is lazy now, and a test spawns the runner in a subprocess with the
+project's third-party packages blocked at import to keep it that way.
+A property nothing enforces is a property that lasts until the next commit.
+
 ---
 
 ## What these numbers do not prove
@@ -219,7 +228,7 @@ the product against the real web, and that cannot be faked.
 
 | Tier | What runs | When | Cost |
 |---|---|---|---|
-| 1 | ruff, 262 backend tests, 17 materials tests, offline injection eval | every push and PR | free, deterministic |
+| 1 | ruff, 264 backend tests, 17 materials tests, offline injection eval | every push and PR | free, deterministic |
 | 2 | live injection A/B | nightly + on demand | Anthropic tokens |
 | 3 | variance and fallback over 30 brands | deliberate runs | tokens + Browserbase, ~20s per pass |
 
@@ -242,16 +251,16 @@ expected to land red before it is fixed.
 
 ## Test inventory
 
-262 backend tests and 17 extension tests.
-192 of the backend tests are new with this work, but 130 of those are parametrized
+264 backend tests and 17 extension tests.
+194 of the backend tests are new with this work, but 130 of those are parametrized
 expansions over the 40 corpus cases, so the honest count of hand-written new tests
-is 62.
+is 64.
 
 | File | Tests | Covers |
 |---|---|---|
 | `tests/test_synthesize.py` | 37 | The agentic loop and the answer parser. 7 are new: page text reaching the model inside a fence, an injected payload failing to escape it, flagged and unflagged pages, the URL staying outside, the system prompt stating the boundary, and a failed search *not* being wrapped as evidence. |
 | `tests/test_evidence.py` | 85 | The fence itself: nonce freshness, redrawing on collision, containment against forged closers and mismatched nonces, invisible-character stripping, and every corpus case parametrized through both containment and detection. |
-| `tests/test_evals.py` | 100 | The eval suite as code. Pure metrics, corpus invariants (unique ids, every payload actually present in its page, no detector family left without a case), the harness, the success predicates, the key gate reading `config` rather than `os.environ`, invalid runs staying out of the success rate, and the CI gate - including that the gate *can* fail, which is the only way to know it is a gate. |
+| `tests/test_evals.py` | 102 | The eval suite as code. Pure metrics, corpus invariants (unique ids, every payload actually present in its page, no detector family left without a case), the harness, the success predicates, the key gate reading `config` rather than `os.environ`, invalid runs staying out of the success rate, and the CI gate - including that the gate *can* fail, which is the only way to know it is a gate. |
 | `tests/test_research.py` | 17 | The tool contract, URL building, thin-page rejection, tab lifetime, concurrent loading. |
 | `tests/test_alternatives.py` | 14 | `infer_category()` and `pref_guidance()`. |
 | `tests/test_cache.py` | 5 | SQLite round-trip, case-insensitive keys, overwrite. |

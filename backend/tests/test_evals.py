@@ -7,6 +7,11 @@ quietly lost its last case would still produce a confident number, and the numbe
 would be wrong.
 """
 
+import pathlib
+import subprocess
+import sys
+import textwrap
+
 import pytest
 
 import config
@@ -344,3 +349,48 @@ def test_variance_excludes_fallbacks_from_the_spread(monkeypatch):
     # Only the real scores reached the stats, so the spread is 0 and not 30.
     assert mixed["ethics"]["spread"] == 0
     assert mixed["ethics"]["mean"] == 20
+
+
+# ---------- the offline tier runs with nothing installed ----------
+
+
+def test_offline_tier_needs_no_project_dependencies():
+    """The no-keys tier must also be a no-dependencies tier.
+
+    Spawned as a subprocess with the project's third-party packages blocked at
+    import, because the property is about import time and cannot be checked from
+    inside a process that has already imported them.
+
+    Regression: keys.py imported config at module scope, config imports
+    python-dotenv, and `python -m evals.run_injection` then died with
+    ModuleNotFoundError before printing a number - on the one tier that is
+    supposed to need nothing.
+    """
+    source = textwrap.dedent(
+        """
+        import sys
+        BLOCKED = {"dotenv", "anthropic", "browserbase", "playwright"}
+
+        class Block:
+            def find_spec(self, name, path=None, target=None):
+                if name.split(".")[0] in BLOCKED:
+                    raise ImportError("blocked: " + name)
+                return None
+
+        sys.meta_path.insert(0, Block())
+        from evals import run_injection
+        sys.exit(run_injection._check(run_injection.offline()))
+        """
+    )
+    backend = pathlib.Path(__file__).resolve().parent.parent
+    done = subprocess.run(
+        [sys.executable, "-c", source], cwd=backend, capture_output=True, text=True
+    )
+    assert done.returncode == 0, done.stderr[-1500:]
+
+
+def test_missing_keys_still_resolves_through_config(monkeypatch):
+    # The lazy import must not quietly turn into "no config, no keys".
+    monkeypatch.delenv("ANTHROPIC_API_KEY", raising=False)
+    monkeypatch.setattr(config, "ANTHROPIC_API_KEY", "sk-ant-from-dotenv")
+    assert keys.missing("ANTHROPIC_API_KEY") == []
