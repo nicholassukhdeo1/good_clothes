@@ -6,9 +6,10 @@
 # The service_role key lives ONLY here (backend/.env). Never ship it in the extension.
 
 import json
-import urllib.request
 import urllib.parse
-from config import SUPABASE_URL, SUPABASE_KEY
+import urllib.request
+
+from config import SUPABASE_KEY, SUPABASE_URL
 
 TABLE = "preferences"
 

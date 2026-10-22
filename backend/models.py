@@ -1,6 +1,7 @@
 # models.py — the request/response contract. Keep extension + backend in sync with this.
-from pydantic import BaseModel
 from typing import List
+
+from pydantic import BaseModel
 
 
 class ResearchRequest(BaseModel):

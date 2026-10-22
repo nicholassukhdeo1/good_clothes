@@ -3,11 +3,13 @@
 # URL ourselves from the brand name so the link always works (no hallucinated URLs)
 # — consistent with the project's honesty rule: every clickable thing is real.
 
-import json
 import base64
+import json
 import urllib.request
 from urllib.parse import quote_plus
+
 from anthropic import Anthropic
+
 from config import ANTHROPIC_API_KEY
 
 client = Anthropic(api_key=ANTHROPIC_API_KEY)

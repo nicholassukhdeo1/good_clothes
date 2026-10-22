@@ -1,0 +1,24 @@
+# Lint baseline for the backend.
+#
+# pyflakes (F), pycodestyle (E/W) and import order (I). Deliberately not the
+# opinionated families: this code catches broad exceptions on purpose - a bad LLM
+# response must degrade the badge, never 500 it - and the injection corpus is full
+# of zero-width and bidi characters because that is the attack it encodes. Rules
+# that forbid those would be answered with a wall of noqa, which teaches nobody
+# anything.
+
+line-length = 120
+target-version = "py311"
+
+[lint]
+select = ["E", "F", "W", "I"]
+
+[lint.isort]
+known-first-party = ["evals"]
+
+[lint.per-file-ignores]
+# chat.py is mostly prompt text held in string literals. Where a line breaks
+# inside a prompt is part of what the model reads, so a formatter must not pick
+# those breaks - the line length rule is off here rather than silently rewriting
+# the prompt.
+"chat.py" = ["E501"]

@@ -1,8 +1,8 @@
 # cache.py — dead-simple SQLite cache keyed by brand.
 # Brand research is slow + expensive and reused across every product of that brand,
 # so cache hard. PRE-WARM this for your demo brand before you present (see README).
-import sqlite3
 import json
+import sqlite3
 
 DB = "cache.db"
 
