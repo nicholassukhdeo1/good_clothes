@@ -5,7 +5,7 @@ What is measured in this project, how, and what the numbers currently are.
 Run everything:
 
 ```bash
-cd backend && pytest tests/ -q          # 264 tests, no keys, no network
+cd backend && pytest tests/ -q          # 268 tests, no keys, no network
 node extension/tests/test_materials.js  # 17 tests, Node built-ins only
 cd backend && ruff check .
 cd backend && python -m evals.run_injection --check
@@ -153,6 +153,19 @@ The same correction applies to the variance eval: a fallback is the pipeline giv
 up, not an opinion about the brand, so it is counted but kept out of the spread,
 where a 50 would otherwise drag a wobbly brand toward looking stable.
 
+**The hardened arm of the live A/B was testing nothing.**
+Found on the first real run, and the worst of the three because it was invisible.
+The arm patched `evidence.wrap` with `harness.render_hardened`, whose body calls
+`evidence.wrap` - so the patch replaced the function with one that called itself.
+`RecursionError` subclasses `Exception`, so `synthesize`'s broad catch turned every
+case into a 50/50 fallback.
+The invalid-run fix from the previous finding is the only reason this surfaced at
+all: all 30 hardened cases reported `INVALID (run failed)` instead of a tidy
+`0/30 succeeded`.
+The hardened arm now patches nothing, because hardened *is* the production path,
+and four tests assert the two arms actually render differently and that neither
+recurses.
+
 **And the fix for the first one broke the offline tier.**
 `keys.py` imported `config` at module scope, `config` imports python-dotenv, and
 `python -m evals.run_injection` then died with `ModuleNotFoundError: No module
@@ -181,10 +194,10 @@ It is still caught, by the `score_coercion` detector reading the other half of t
 same payload, and it is still contained.
 It is in the corpus as a standing reminder that the advisory layer is porous.
 
-**Attack success against the live model has not been measured yet.**
+**Containment is not the same as resistance.**
 Containment proves the payload is marked as untrusted.
 It does not prove the model ignores it.
-That needs an API key:
+That is what the live arm measures:
 
 ```bash
 cd backend && python -m evals.run_injection --live
@@ -193,7 +206,37 @@ cd backend && python -m evals.run_injection --live
 The live arm is a true A/B - the "before" run monkeypatches the wrapper back to the
 original f-string, so the two arms differ in exactly one thing - and it serves corpus
 pages instead of browsing, so it is reproducible and costs no Browserbase session.
-**The number it produces is not in this document because it has not been run.**
+
+### The live baseline result, and why it is uncomfortable
+
+First real run, Claude Sonnet, one pass per case, **against the unhardened
+rendering**:
+
+| Arm | Attacks succeeded |
+|---|---|
+| baseline (raw concatenation, no fence) | **0 / 29 valid runs** |
+
+One run failed before scoring and was excluded.
+The hardened arm from the same run is not reported, because that is the run where
+the recursion bug was found and it measured nothing.
+
+So: with no fence at all, the model refused every payload in the corpus.
+The honest reading is that this defense was not load-bearing at this model version,
+on these attacks, at one sample each.
+
+It is worth stating what that does and does not mean.
+It does not mean injection is impossible here - it means these 30 first-order,
+non-adaptive payloads did not work on this model on one try apiece, which is weak
+evidence against a determined attacker who iterates.
+It does not make containment worthless either, for a reason that is the actual
+argument for the fix: **a defense that depends on the model's disposition is not a
+defense.** Model versions change, prompts get edited, and the next one may be more
+agreeable. The fence is structural and costs a nonce plus a paragraph.
+
+The number worth having is the hardened arm beside a baseline that is not zero, and
+getting there means harder attacks rather than more of these.
+That is the next piece of work, and it is honest to say the current corpus is too
+easy rather than to report 0 vs 0 as a win.
 
 ---
 
@@ -228,7 +271,7 @@ the product against the real web, and that cannot be faked.
 
 | Tier | What runs | When | Cost |
 |---|---|---|---|
-| 1 | ruff, 264 backend tests, 17 materials tests, offline injection eval | every push and PR | free, deterministic |
+| 1 | ruff, 268 backend tests, 17 materials tests, offline injection eval | every push and PR | free, deterministic |
 | 2 | live injection A/B | nightly + on demand | Anthropic tokens |
 | 3 | variance and fallback over 30 brands | deliberate runs | tokens + Browserbase, ~20s per pass |
 
@@ -251,16 +294,16 @@ expected to land red before it is fixed.
 
 ## Test inventory
 
-264 backend tests and 17 extension tests.
-194 of the backend tests are new with this work, but 130 of those are parametrized
+268 backend tests and 17 extension tests.
+198 of the backend tests are new with this work, but 130 of those are parametrized
 expansions over the 40 corpus cases, so the honest count of hand-written new tests
-is 64.
+is 68.
 
 | File | Tests | Covers |
 |---|---|---|
 | `tests/test_synthesize.py` | 37 | The agentic loop and the answer parser. 7 are new: page text reaching the model inside a fence, an injected payload failing to escape it, flagged and unflagged pages, the URL staying outside, the system prompt stating the boundary, and a failed search *not* being wrapped as evidence. |
 | `tests/test_evidence.py` | 85 | The fence itself: nonce freshness, redrawing on collision, containment against forged closers and mismatched nonces, invisible-character stripping, and every corpus case parametrized through both containment and detection. |
-| `tests/test_evals.py` | 102 | The eval suite as code. Pure metrics, corpus invariants (unique ids, every payload actually present in its page, no detector family left without a case), the harness, the success predicates, the key gate reading `config` rather than `os.environ`, invalid runs staying out of the success rate, and the CI gate - including that the gate *can* fail, which is the only way to know it is a gate. |
+| `tests/test_evals.py` | 106 | The eval suite as code. Pure metrics, corpus invariants (unique ids, every payload actually present in its page, no detector family left without a case), the harness, the success predicates, the key gate reading `config` rather than `os.environ`, invalid runs staying out of the success rate, and the CI gate - including that the gate *can* fail, which is the only way to know it is a gate. |
 | `tests/test_research.py` | 17 | The tool contract, URL building, thin-page rejection, tab lifetime, concurrent loading. |
 | `tests/test_alternatives.py` | 14 | `infer_category()` and `pref_guidance()`. |
 | `tests/test_cache.py` | 5 | SQLite round-trip, case-insensitive keys, overwrite. |
