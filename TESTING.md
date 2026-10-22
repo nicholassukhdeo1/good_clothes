@@ -382,10 +382,39 @@ is 92.
 
 ## Known gaps
 
+**No grounding check.**
+Nothing verifies that a cited source actually supports the claim in the summary.
+The only thing tested about a source is that its URL has a scheme.
+
+This one is listed first and on its own because it is a missing capability rather than
+missing coverage.
+There is no grounding check to write a test against, so no amount of test-writing
+closes it.
+It is also where [the prediction](#the-prediction-written-down-before-the-run) lands
+from the other direction: the fence can mark page text untrusted but it cannot mark it
+untrue, and the product's premise is reading brand pages and believing what they say.
+That is what makes brand-authored evidence the real exposure, and a grounding check the
+missing defense against it.
+Closing it needs source reputation, corroboration across independent domains, or a
+refusal to score from brand-controlled pages at all, and none of those exist yet.
+
+The rest are coverage gaps, where the behavior exists and is simply unverified.
 Ranked by how much they would bother a reviewer.
 
-1. **No route tests.** `main.py` has seven endpoints and a `TestClient` never touches one. The cache is documented as shared across three of them and nothing proves an endpoint consults it.
-2. **`alternatives.py` is barely covered.** Only the two pure string helpers are tested. The Claude vision call, the JSON parse, and the server-built shopping links - the claim that no URL is ever hallucinated - have no coverage.
-3. **No extension tests beyond materials.** `content.js` scrapes SSENSE's DOM and `background.js` relays to the backend. The relay has already shipped one real bug (a style brief silently dropped) and still has no regression test. DOM scraping is the most fragile part of the product and has none.
-4. **Mock shape is a silent-failure risk.** The fakes encode the Anthropic SDK's response structure by hand. If that shape changes, the suite stays green while production breaks. One recorded real response as a fixture would catch it.
-5. **No grounding check.** Nothing verifies that a cited source actually supports the claim in the summary. The only thing tested about a source is that its URL has a scheme.
+1. **No route tests.**
+   `main.py` has seven endpoints and a `TestClient` never touches one.
+   The cache is documented as shared across three of them and nothing proves an endpoint
+   consults it.
+2. **`alternatives.py` is barely covered.**
+   Only the two pure string helpers are tested.
+   The Claude vision call, the JSON parse, and the server-built shopping links - the
+   claim that no URL is ever hallucinated - have no coverage.
+3. **No extension tests beyond materials.**
+   `content.js` scrapes SSENSE's DOM and `background.js` relays to the backend.
+   The relay has already shipped one real bug (a style brief silently dropped) and still
+   has no regression test.
+   DOM scraping is the most fragile part of the product and has none.
+4. **Mock shape is a silent-failure risk.**
+   The fakes encode the Anthropic SDK's response structure by hand.
+   If that shape changes, the suite stays green while production breaks.
+   One recorded real response as a fixture would catch it.
