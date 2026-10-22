@@ -68,14 +68,22 @@ uvicorn main:app --reload
 
 ## Tests
 
-No API keys or network access needed — all external calls are mocked.
+No API keys or network access needed for the unit suites - all external calls are mocked.
 
 ```bash
-cd backend && pytest tests/ -v
+cd backend && pytest tests/ -q          # 253 tests
+node extension/tests/test_materials.js  # 17 tests
+cd backend && ruff check .
 ```
+
+The agentic parts also carry an eval suite, because mocked tests can prove the loop
+is wired correctly but not that the output is any good.
+The offline half runs with no keys and gates CI:
 
 ```bash
-node extension/tests/test_materials.js
+cd backend && python -m evals.run_injection --check
 ```
 
+See [`TESTING.md`](TESTING.md) for what is measured, the current numbers, and what
+they do not prove.
 See [`CODEBASE.md`](CODEBASE.md) for a file-by-file breakdown of the project.
