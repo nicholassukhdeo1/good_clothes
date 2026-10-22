@@ -95,8 +95,14 @@ jobs:
 
       - name: Check for an API key
         id: key
+        # The secret goes through env, not through ${{ }} inside the script. An
+        # interpolated secret is pasted into the shell command line before the
+        # shell parses it, so one containing a quote or a backtick breaks the step
+        # or runs as code. Masking in the log does not change that.
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
         run: |
-          if [ -n "${{ secrets.ANTHROPIC_API_KEY }}" ]; then
+          if [ -n "$ANTHROPIC_API_KEY" ]; then
             echo "present=true" >> "$GITHUB_OUTPUT"
           else
             echo "present=false" >> "$GITHUB_OUTPUT"
