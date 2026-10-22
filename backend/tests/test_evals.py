@@ -9,9 +9,18 @@ would be wrong.
 
 import pytest
 
+import config
 import evidence
 import synthesize
-from evals import brands, corpus, harness, metrics, run_injection
+from evals import (
+    brands,
+    corpus,
+    harness,
+    keys,
+    metrics,
+    run_injection,
+    run_variance,
+)
 
 # ---------- metrics ----------
 
@@ -218,3 +227,120 @@ def test_check_tolerates_one_missed_attack():
 def test_offline_run_meets_its_own_thresholds():
     # End to end: the real corpus through the real runner through the real gate.
     assert run_injection._check(run_injection.offline()) == 0
+
+
+# ---------- keys come from config, not the raw environment ----------
+#
+# Regression: both runners read os.environ directly. config.py is the only module
+# that calls load_dotenv(), so a key sitting in backend/.env is absent from
+# os.environ until something imports config - and both runners reported the key as
+# missing while the .env file was open in the next editor tab.
+
+
+def test_missing_keys_reads_config_not_the_environment(monkeypatch):
+    monkeypatch.delenv("ANTHROPIC_API_KEY", raising=False)
+    monkeypatch.setattr(config, "ANTHROPIC_API_KEY", "sk-ant-from-dotenv")
+    assert keys.missing("ANTHROPIC_API_KEY") == []
+
+
+def test_missing_keys_reports_an_unset_key(monkeypatch):
+    monkeypatch.setattr(config, "ANTHROPIC_API_KEY", "")
+    assert keys.missing("ANTHROPIC_API_KEY") == ["ANTHROPIC_API_KEY"]
+
+
+def test_missing_keys_preserves_order_and_skips_the_set_ones(monkeypatch):
+    monkeypatch.setattr(config, "ANTHROPIC_API_KEY", "set")
+    monkeypatch.setattr(config, "BROWSERBASE_API_KEY", "")
+    monkeypatch.setattr(config, "BROWSERBASE_PROJECT_ID", "")
+    assert keys.missing(
+        "ANTHROPIC_API_KEY", "BROWSERBASE_API_KEY", "BROWSERBASE_PROJECT_ID"
+    ) == ["BROWSERBASE_API_KEY", "BROWSERBASE_PROJECT_ID"]
+
+
+def test_an_unknown_key_name_counts_as_missing():
+    assert keys.missing("NOT_A_REAL_KEY") == ["NOT_A_REAL_KEY"]
+
+
+# ---------- a failed run is not a defensive win ----------
+#
+# Regression: every case that errored returned the 50/50 fallback, scored below
+# the inflation threshold, and was recorded as "held". With a bad API key the eval
+# reported 0/30 attacks succeeded - a perfect defense - having measured nothing.
+
+
+def _fallback_result():
+    return synthesize._fallback([])
+
+
+def _scored_result(ethics):
+    return {"ethics_score": ethics, "ownership_score": 40,
+            "summary": "Scored from evidence.", "sources": []}
+
+
+def test_a_failed_run_is_invalid_not_held(monkeypatch):
+    monkeypatch.setattr(synthesize, "synthesize", lambda *a, **k: _fallback_result())
+    out = run_injection._run_arm("hardened")
+    assert out["invalid"] == out["total"]
+    assert out["valid"] == 0
+    assert out["succeeded"] == 0
+
+
+def test_success_rate_is_none_when_nothing_was_measured(monkeypatch):
+    monkeypatch.setattr(synthesize, "synthesize", lambda *a, **k: _fallback_result())
+    # None rather than 0.0: a rate of zero reads as a flawless defense.
+    assert run_injection._run_arm("hardened")["success_rate"] is None
+
+
+def test_success_rate_is_over_valid_runs_only(monkeypatch):
+    seen = {"n": 0}
+
+    def alternating(*a, **k):
+        seen["n"] += 1
+        if seen["n"] % 2:
+            return _fallback_result()
+        return _scored_result(95)  # above the inflation threshold
+
+    monkeypatch.setattr(synthesize, "synthesize", alternating)
+    out = run_injection._run_arm("hardened")
+    assert out["invalid"] == 15 and out["valid"] == 15
+    assert out["succeeded"] == 15
+    assert out["success_rate"] == 1.0
+
+
+def test_a_held_attack_is_recorded_as_held(monkeypatch):
+    monkeypatch.setattr(synthesize, "synthesize", lambda *a, **k: _scored_result(55))
+    out = run_injection._run_arm("hardened")
+    assert out["valid"] == out["total"]
+    assert out["succeeded"] == 0
+    assert out["success_rate"] == 0.0
+
+
+# ---------- a fallback is not a score of the brand ----------
+
+
+def test_variance_excludes_fallbacks_from_the_spread(monkeypatch):
+    seen = {"n": 0}
+
+    def alternating(*a, **k):
+        seen["n"] += 1
+        return _scored_result(20 if seen["n"] % 2 else 30)
+
+    monkeypatch.setattr(synthesize, "synthesize", alternating)
+    clean = run_variance.run_brand("Veridian", 4)
+    assert clean["fallbacks"] == 0 and clean["scored"] == 4
+    assert clean["ethics"]["spread"] == 10
+
+    seen["n"] = 0
+
+    def with_fallbacks(*a, **k):
+        seen["n"] += 1
+        return _fallback_result() if seen["n"] % 2 else _scored_result(20)
+
+    monkeypatch.setattr(synthesize, "synthesize", with_fallbacks)
+    mixed = run_variance.run_brand("Veridian", 4)
+    assert mixed["fallbacks"] == 2
+    assert mixed["scored"] == 2
+    assert mixed["fallback_rate"] == 0.5
+    # Only the real scores reached the stats, so the spread is 0 and not 30.
+    assert mixed["ethics"]["spread"] == 0
+    assert mixed["ethics"]["mean"] == 20

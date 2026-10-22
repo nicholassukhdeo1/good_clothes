@@ -78,6 +78,7 @@ See [`TESTING.md`](TESTING.md) for the numbers.
 |---|---|
 | `corpus.py` | 30 adversarial pages across 10 attack families, plus 10 control pages with no payload. The controls exist so the detector's false-positive rate is measured rather than assumed - one is a news article about prompt injection, which is the case a naive pattern list gets wrong. |
 | `harness.py` | The two renderings under test (the original f-string, kept so "before" stays measurable, and the hardened wrapper), the containment and detection metrics, a `CorpusBrowser` that serves corpus pages so the live eval is reproducible, and one attack-success predicate per attacker goal. |
+| `keys.py` | Resolves the API keys an eval needs through `config.py`, never `os.environ`. config is the only module that calls `load_dotenv()`, so a key in `backend/.env` does not exist in the environment until config is imported - both runners shipped with that bug. |
 | `metrics.py` | Mean, population standard deviation, spread, rate, and fallback detection. Pure functions, unit tested, so every number the suite prints comes from code that runs in CI. |
 | `brands.py` | 30 brands spanning well-covered, mid-coverage, conglomerate-owned, and barely-covered, for the variance runs. The tier is a note about evidence availability, not an expected score. |
 | `report.py` | Writes each run to `evals/results/` as dated JSON so quality is diffable over time. |

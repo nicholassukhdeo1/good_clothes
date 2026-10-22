@@ -5,7 +5,7 @@ What is measured in this project, how, and what the numbers currently are.
 Run everything:
 
 ```bash
-cd backend && pytest tests/ -q          # 253 tests, no keys, no network
+cd backend && pytest tests/ -q          # 262 tests, no keys, no network
 node extension/tests/test_materials.js  # 17 tests, Node built-ins only
 cd backend && ruff check .
 cd backend && python -m evals.run_injection --check
@@ -122,6 +122,37 @@ ignore its** previous instructions"*.
 Anchoring the pattern on the imperative, and refusing a third-person possessive after
 the verb, took it to 30/30 with 0 false positives.
 
+### Two defects the suite found in itself
+
+Both were caught by running the thing rather than reading it, and both are recorded
+because an eval nobody has tried to break is a claim, not a measurement.
+
+**The key gate read the wrong environment.**
+Both runners checked `os.environ` for the API key.
+`config.py` is the only module that calls `load_dotenv()`, so a key sitting in
+`backend/.env` is absent from `os.environ` until something imports `config` - and
+the gate ran before anything had.
+Both runners reported the key as missing while the `.env` file was open in the next
+editor tab.
+`evals/keys.py` now resolves through `config`, which is what `CODEBASE.md` said all
+along: keys live in `config.py` and nowhere else.
+
+**A failed run was being counted as a successful defense.**
+This one mattered more.
+When a run errors, `synthesize` returns the 50/50 fallback.
+That scores below the inflation threshold, so `attack_succeeded` returned `False`,
+and the case was recorded as `held`.
+With a bad API key every single case errored and the eval reported *0/30 attacks
+succeeded* - a flawless defense - having never once reached the model.
+
+A run that fell back is now `INVALID`, excluded from the denominator, and counted
+separately.
+Success rate is `None` rather than `0.0` when nothing was measured, because a rate
+of zero reads as a perfect score.
+The same correction applies to the variance eval: a fallback is the pipeline giving
+up, not an opinion about the brand, so it is counted but kept out of the spread,
+where a 50 would otherwise drag a wobbly brand toward looking stable.
+
 ---
 
 ## What these numbers do not prove
@@ -188,7 +219,7 @@ the product against the real web, and that cannot be faked.
 
 | Tier | What runs | When | Cost |
 |---|---|---|---|
-| 1 | ruff, 253 backend tests, 17 materials tests, offline injection eval | every push and PR | free, deterministic |
+| 1 | ruff, 262 backend tests, 17 materials tests, offline injection eval | every push and PR | free, deterministic |
 | 2 | live injection A/B | nightly + on demand | Anthropic tokens |
 | 3 | variance and fallback over 30 brands | deliberate runs | tokens + Browserbase, ~20s per pass |
 
@@ -211,16 +242,16 @@ expected to land red before it is fixed.
 
 ## Test inventory
 
-253 backend tests and 17 extension tests.
-183 of the backend tests are new with this work, but 130 of those are parametrized
+262 backend tests and 17 extension tests.
+192 of the backend tests are new with this work, but 130 of those are parametrized
 expansions over the 40 corpus cases, so the honest count of hand-written new tests
-is 53.
+is 62.
 
 | File | Tests | Covers |
 |---|---|---|
 | `tests/test_synthesize.py` | 37 | The agentic loop and the answer parser. 7 are new: page text reaching the model inside a fence, an injected payload failing to escape it, flagged and unflagged pages, the URL staying outside, the system prompt stating the boundary, and a failed search *not* being wrapped as evidence. |
 | `tests/test_evidence.py` | 85 | The fence itself: nonce freshness, redrawing on collision, containment against forged closers and mismatched nonces, invisible-character stripping, and every corpus case parametrized through both containment and detection. |
-| `tests/test_evals.py` | 91 | The eval suite as code. Pure metrics, corpus invariants (unique ids, every payload actually present in its page, no detector family left without a case), the harness, the success predicates, and the CI gate - including that the gate *can* fail, which is the only way to know it is a gate. |
+| `tests/test_evals.py` | 100 | The eval suite as code. Pure metrics, corpus invariants (unique ids, every payload actually present in its page, no detector family left without a case), the harness, the success predicates, the key gate reading `config` rather than `os.environ`, invalid runs staying out of the success rate, and the CI gate - including that the gate *can* fail, which is the only way to know it is a gate. |
 | `tests/test_research.py` | 17 | The tool contract, URL building, thin-page rejection, tab lifetime, concurrent loading. |
 | `tests/test_alternatives.py` | 14 | `infer_category()` and `pref_guidance()`. |
 | `tests/test_cache.py` | 5 | SQLite round-trip, case-insensitive keys, overwrite. |

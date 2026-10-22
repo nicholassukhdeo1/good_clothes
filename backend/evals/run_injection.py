@@ -20,7 +20,7 @@ import argparse
 import sys
 from unittest.mock import patch
 
-from evals import corpus, harness, report
+from evals import corpus, harness, keys, metrics, report
 
 
 def offline() -> dict:
@@ -61,45 +61,67 @@ def _run_arm(arm: str) -> dict:
             ctx = patch.object(synthesize.evidence, "wrap", harness.render_hardened)
         with ctx:
             result = synthesize.synthesize(case["id"], browser=browser)
-        won = harness.attack_succeeded(case, result, synthesize.SYSTEM)
+
+        # A run that degraded to the 50/50 fallback measured nothing: the loop
+        # failed before the model ever scored the page. Counting it as "held"
+        # would report a defensive win for every case the moment the API key is
+        # wrong, which is precisely how this eval first lied to us.
+        invalid = metrics.is_fallback(result, synthesize.FALLBACK_SUMMARY)
+        won = (not invalid) and harness.attack_succeeded(case, result, synthesize.SYSTEM)
+        status = "INVALID (run failed)" if invalid else (
+            "ATTACK SUCCEEDED" if won else "held"
+        )
         outcomes.append(
             {
                 "id": case["id"],
                 "family": case["family"],
                 "succeeded": won,
+                "invalid": invalid,
                 "ethics_score": result.get("ethics_score"),
                 "ownership_score": result.get("ownership_score"),
                 "summary": result.get("summary"),
             }
         )
         print(f"  [{arm}] {case['id']:<26} "
-              f"ethics={result.get('ethics_score'):<4} "
-              f"{'ATTACK SUCCEEDED' if won else 'held'}")
+              f"ethics={result.get('ethics_score'):<4} {status}")
 
     wins = [o for o in outcomes if o["succeeded"]]
+    invalid = [o for o in outcomes if o["invalid"]]
+    valid = len(outcomes) - len(invalid)
     return {
         "arm": arm,
         "total": len(outcomes),
+        "valid": valid,
+        "invalid": len(invalid),
         "succeeded": len(wins),
-        "success_rate": len(wins) / len(outcomes) if outcomes else 0.0,
+        # Over the runs that actually produced a score. None, not 0.0, when
+        # nothing was measured - a rate of zero would read as a perfect defense.
+        "success_rate": (len(wins) / valid) if valid else None,
         "by_family": sorted({o["family"] for o in wins}),
         "cases": outcomes,
     }
 
 
 def live(arms) -> dict:
-    import os
-
-    if not os.environ.get("ANTHROPIC_API_KEY"):
-        print("\nANTHROPIC_API_KEY is not set - skipping the live arm.", file=sys.stderr)
+    if keys.missing("ANTHROPIC_API_KEY"):
+        print("\nANTHROPIC_API_KEY is not set - skipping the live arm.\n"
+              "Put it in backend/.env or export it, then re-run.", file=sys.stderr)
         return {}
 
     out = {}
     for arm in arms:
         report.heading(f"Live attack success: {arm} rendering")
         out[arm] = _run_arm(arm)
-        print(f"\n  {arm}: {out[arm]['succeeded']}/{out[arm]['total']} succeeded "
-              f"({report.pct(out[arm]['success_rate'])})")
+        r = out[arm]
+        if r["success_rate"] is None:
+            print(f"\n  {arm}: NOTHING MEASURED - all {r['total']} runs failed before "
+                  f"scoring. Check the API key and re-run.", file=sys.stderr)
+        else:
+            print(f"\n  {arm}: {r['succeeded']}/{r['valid']} succeeded "
+                  f"({report.pct(r['success_rate'])})")
+            if r["invalid"]:
+                print(f"  {arm}: {r['invalid']}/{r['total']} runs failed before scoring "
+                      f"and are excluded.")
     return out
 
 
