@@ -5,7 +5,7 @@ What is measured in this project, how, and what the numbers currently are.
 Run everything:
 
 ```bash
-cd backend && pytest tests/ -q          # 380 tests, no keys, no network
+cd backend && pytest tests/ -q          # 384 tests, no keys, no network
 node extension/tests/test_materials.js  # 17 tests, Node built-ins only
 cd backend && ruff check .
 cd backend && python -m evals.run_injection --check
@@ -337,10 +337,10 @@ the product against the real web, and that cannot be faked.
 
 | Tier | What runs | When | Cost |
 |---|---|---|---|
-| 1 | ruff, 380 backend tests, 17 materials tests, offline injection eval | every push and PR | free, deterministic |
+| 1 | ruff, 384 backend tests, 17 materials tests, offline injection eval | every push and PR | free, deterministic |
 | 2 | live injection A/B | nightly + on demand | Anthropic tokens |
 | 3 | evidence eval, paired A/B over 23 cases | on demand | 92 research passes |
-| 3 | variance and fallback over 30 brands | deliberate runs | tokens + Browserbase, ~20s per pass |
+| 3 | variance and fallback over 30 brands | deliberate runs | tokens + Browserbase, ~16s per pass measured over 30 brands |
 
 Tier 1 blocks.
 Tier 2 does not run on pull requests at all: it needs a secret that fork PRs cannot
@@ -361,16 +361,16 @@ expected to land red before it is fixed.
 
 ## Test inventory
 
-380 backend tests and 17 extension tests.
-310 of the backend tests are new with this work, but 218 of those are parametrized
+384 backend tests and 17 extension tests.
+314 of the backend tests are new with this work, but 218 of those are parametrized
 expansions over the 63 corpus cases, so the honest count of hand-written new tests
-is 92.
+is 96.
 
 | File | Tests | Covers |
 |---|---|---|
 | `tests/test_synthesize.py` | 37 | The agentic loop and the answer parser. 7 are new: page text reaching the model inside a fence, an injected payload failing to escape it, flagged and unflagged pages, the URL staying outside, the system prompt stating the boundary, and a failed search *not* being wrapped as evidence. |
 | `tests/test_evidence.py` | 85 | The fence itself: nonce freshness, redrawing on collision, containment against forged closers and mismatched nonces, invisible-character stripping, and every corpus case parametrized through both containment and detection. |
-| `tests/test_evals.py` | 106 | The eval suite as code. Pure metrics, corpus invariants (unique ids, every payload actually present in its page, no detector family left without a case), the harness, the success predicates, the key gate reading `config` rather than `os.environ`, invalid runs staying out of the success rate, and the CI gate - including that the gate *can* fail, which is the only way to know it is a gate. |
+| `tests/test_evals.py` | 110 | The eval suite as code. Pure metrics, the degeneracy check that counts an abstention as well as the code's own fallback, corpus invariants (unique ids, every payload actually present in its page, no detector family left without a case), the harness, the success predicates, the key gate reading `config` rather than `os.environ`, invalid runs staying out of the success rate, and the CI gate - including that the gate *can* fail, which is the only way to know it is a gate. |
 | `tests/test_evidence_eval.py` | 112 | The hard corpus and the paired-delta runner: attack and control having the same shape and comparable length, staged pages served in order across turns with distinct sources, a failed half invalidating the pair rather than scoring as zero movement, and a downward case counting a drop rather than a rise. |
 | `tests/test_research.py` | 17 | The tool contract, URL building, thin-page rejection, tab lifetime, concurrent loading. |
 | `tests/test_alternatives.py` | 14 | `infer_category()` and `pref_guidance()`. |
