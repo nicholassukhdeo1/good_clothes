@@ -1,0 +1,60 @@
+{
+  "brands": [
+    {
+      "brand": "Nike",
+      "ethics": {
+        "max": 42,
+        "mean": 33.6,
+        "min": 22,
+        "n": 10,
+        "spread": 20,
+        "stdev": 6.56
+      },
+      "fallback_rate": 0.0,
+      "fallbacks": 0,
+      "latency_s": 18.6,
+      "ownership": {
+        "max": 40,
+        "mean": 32.8,
+        "min": 25,
+        "n": 10,
+        "spread": 15,
+        "stdev": 4.19
+      },
+      "runs": 10,
+      "scored": 10
+    },
+    {
+      "brand": "Sillage",
+      "ethics": {
+        "max": 62,
+        "mean": 47.2,
+        "min": 0,
+        "n": 10,
+        "spread": 62,
+        "stdev": 16.48
+      },
+      "fallback_rate": 0.0,
+      "fallbacks": 0,
+      "latency_s": 13.3,
+      "ownership": {
+        "max": 85,
+        "mean": 63.1,
+        "min": 0,
+        "n": 10,
+        "spread": 85,
+        "stdev": 25.16
+      },
+      "runs": 10,
+      "scored": 10
+    }
+  ],
+  "environment": {
+    "argv": "/Users/nicholassukhdeo/Downloads/good_clothes/backend/evals/run_variance.py --brands Nike Sillage --n 10",
+    "python": "3.14.6"
+  },
+  "fallback_rate": 0.0,
+  "median_spread": 41.0,
+  "recorded_at": "2026-10-23T213004Z",
+  "runs_per_brand": 10
+}
