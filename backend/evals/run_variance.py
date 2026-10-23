@@ -7,7 +7,7 @@
 Needs ANTHROPIC_API_KEY and the Browserbase keys: unlike the injection eval this
 one has to touch the real web, because the thing being measured is the product,
 not the prompt. That makes it the expensive tier - n runs over 30 brands is 30n
-research passes at roughly 14-26s each - so it belongs on a schedule and on
+research passes at roughly 16s each (median over 30 brands) - so it belongs on a schedule and on
 prompt changes, never on a push.
 
 Two numbers come out of it:

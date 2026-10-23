@@ -11,7 +11,7 @@ Built at the Berkeley AI Hackathon 2026. Targets SSENSE.
 When you open a product page, a badge appears with three scores:
 
 - **Materials** - computed locally from the fabric composition listed on the page (deterministic, no network call, always works)
-- **Ethics** - Claude researches the brand itself: it calls a search tool with its own queries, reads the pages a Browserbase cloud browser loads concurrently, searches again when the evidence is thin, then scores (about 14-26s cold, instant once cached)
+- **Ethics** - Claude researches the brand itself: it calls a search tool with its own queries, reads the pages a Browserbase cloud browser loads concurrently, searches again when the evidence is thin, then scores (13-22s cold, median 16s measured over 30 brands; a cache hit skips the model entirely)
 - **Ownership** - same research pass; penalizes PE-owned and conglomerate brands, rewards independent ownership
 
 The three scores combine into a single 0-100 rating.

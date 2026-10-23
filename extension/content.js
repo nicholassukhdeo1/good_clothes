@@ -91,7 +91,7 @@ function scrape() {
 
 // How long a cold brand lookup takes, for the loading countdown. Claude researches
 // the brand itself now - a few concurrent page loads plus three or four model turns -
-// so this is measured, not guessed: 16s, 20s and 26s across three brands. Overshooting
+// so this is measured, not guessed: 13-22s with a 16s median over 30 brands. Overshooting
 // is handled (the label switches to a live "still working" counter), undershooting just
 // makes the badge look stuck, so this sits near the slow end.
 const RESEARCH_ETA_S = 25;
