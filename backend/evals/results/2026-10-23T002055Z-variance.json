@@ -1,0 +1,732 @@
+{
+  "brands": [
+    {
+      "brand": "Patagonia",
+      "ethics": {
+        "max": 88,
+        "mean": 88.0,
+        "min": 88,
+        "n": 1,
+        "spread": 0,
+        "stdev": 0.0
+      },
+      "fallback_rate": 0.0,
+      "fallbacks": 0,
+      "latency_s": 16.0,
+      "ownership": {
+        "max": 97,
+        "mean": 97.0,
+        "min": 97,
+        "n": 1,
+        "spread": 0,
+        "stdev": 0.0
+      },
+      "runs": 1,
+      "scored": 1
+    },
+    {
+      "brand": "Shein",
+      "ethics": {
+        "max": 8,
+        "mean": 8.0,
+        "min": 8,
+        "n": 1,
+        "spread": 0,
+        "stdev": 0.0
+      },
+      "fallback_rate": 0.0,
+      "fallbacks": 0,
+      "latency_s": 16.2,
+      "ownership": {
+        "max": 30,
+        "mean": 30.0,
+        "min": 30,
+        "n": 1,
+        "spread": 0,
+        "stdev": 0.0
+      },
+      "runs": 1,
+      "scored": 1
+    },
+    {
+      "brand": "Everlane",
+      "ethics": {
+        "max": 33,
+        "mean": 33.0,
+        "min": 33,
+        "n": 1,
+        "spread": 0,
+        "stdev": 0.0
+      },
+      "fallback_rate": 0.0,
+      "fallbacks": 0,
+      "latency_s": 19.8,
+      "ownership": {
+        "max": 10,
+        "mean": 10.0,
+        "min": 10,
+        "n": 1,
+        "spread": 0,
+        "stdev": 0.0
+      },
+      "runs": 1,
+      "scored": 1
+    },
+    {
+      "brand": "H&M",
+      "ethics": {
+        "max": 33,
+        "mean": 33.0,
+        "min": 33,
+        "n": 1,
+        "spread": 0,
+        "stdev": 0.0
+      },
+      "fallback_rate": 0.0,
+      "fallbacks": 0,
+      "latency_s": 13.7,
+      "ownership": {
+        "max": 55,
+        "mean": 55.0,
+        "min": 55,
+        "n": 1,
+        "spread": 0,
+        "stdev": 0.0
+      },
+      "runs": 1,
+      "scored": 1
+    },
+    {
+      "brand": "Zara",
+      "ethics": {
+        "max": 28,
+        "mean": 28.0,
+        "min": 28,
+        "n": 1,
+        "spread": 0,
+        "stdev": 0.0
+      },
+      "fallback_rate": 0.0,
+      "fallbacks": 0,
+      "latency_s": 18.8,
+      "ownership": {
+        "max": 22,
+        "mean": 22.0,
+        "min": 22,
+        "n": 1,
+        "spread": 0,
+        "stdev": 0.0
+      },
+      "runs": 1,
+      "scored": 1
+    },
+    {
+      "brand": "Nike",
+      "ethics": {
+        "max": 38,
+        "mean": 38.0,
+        "min": 38,
+        "n": 1,
+        "spread": 0,
+        "stdev": 0.0
+      },
+      "fallback_rate": 0.0,
+      "fallbacks": 0,
+      "latency_s": 15.0,
+      "ownership": {
+        "max": 42,
+        "mean": 42.0,
+        "min": 42,
+        "n": 1,
+        "spread": 0,
+        "stdev": 0.0
+      },
+      "runs": 1,
+      "scored": 1
+    },
+    {
+      "brand": "Boohoo",
+      "ethics": {
+        "max": 8,
+        "mean": 8.0,
+        "min": 8,
+        "n": 1,
+        "spread": 0,
+        "stdev": 0.0
+      },
+      "fallback_rate": 0.0,
+      "fallbacks": 0,
+      "latency_s": 14.8,
+      "ownership": {
+        "max": 38,
+        "mean": 38.0,
+        "min": 38,
+        "n": 1,
+        "spread": 0,
+        "stdev": 0.0
+      },
+      "runs": 1,
+      "scored": 1
+    },
+    {
+      "brand": "Primark",
+      "ethics": {
+        "max": 28,
+        "mean": 28.0,
+        "min": 28,
+        "n": 1,
+        "spread": 0,
+        "stdev": 0.0
+      },
+      "fallback_rate": 0.0,
+      "fallbacks": 0,
+      "latency_s": 13.9,
+      "ownership": {
+        "max": 22,
+        "mean": 22.0,
+        "min": 22,
+        "n": 1,
+        "spread": 0,
+        "stdev": 0.0
+      },
+      "runs": 1,
+      "scored": 1
+    },
+    {
+      "brand": "Levi's",
+      "ethics": {
+        "max": 42,
+        "mean": 42.0,
+        "min": 42,
+        "n": 1,
+        "spread": 0,
+        "stdev": 0.0
+      },
+      "fallback_rate": 0.0,
+      "fallbacks": 0,
+      "latency_s": 16.0,
+      "ownership": {
+        "max": 68,
+        "mean": 68.0,
+        "min": 68,
+        "n": 1,
+        "spread": 0,
+        "stdev": 0.0
+      },
+      "runs": 1,
+      "scored": 1
+    },
+    {
+      "brand": "Uniqlo",
+      "ethics": {
+        "max": 30,
+        "mean": 30.0,
+        "min": 30,
+        "n": 1,
+        "spread": 0,
+        "stdev": 0.0
+      },
+      "fallback_rate": 0.0,
+      "fallbacks": 0,
+      "latency_s": 18.8,
+      "ownership": {
+        "max": 35,
+        "mean": 35.0,
+        "min": 35,
+        "n": 1,
+        "spread": 0,
+        "stdev": 0.0
+      },
+      "runs": 1,
+      "scored": 1
+    },
+    {
+      "brand": "Acne Studios",
+      "ethics": {
+        "max": 78,
+        "mean": 78.0,
+        "min": 78,
+        "n": 1,
+        "spread": 0,
+        "stdev": 0.0
+      },
+      "fallback_rate": 0.0,
+      "fallbacks": 0,
+      "latency_s": 13.7,
+      "ownership": {
+        "max": 52,
+        "mean": 52.0,
+        "min": 52,
+        "n": 1,
+        "spread": 0,
+        "stdev": 0.0
+      },
+      "runs": 1,
+      "scored": 1
+    },
+    {
+      "brand": "Ganni",
+      "ethics": {
+        "max": 68,
+        "mean": 68.0,
+        "min": 68,
+        "n": 1,
+        "spread": 0,
+        "stdev": 0.0
+      },
+      "fallback_rate": 0.0,
+      "fallbacks": 0,
+      "latency_s": 14.3,
+      "ownership": {
+        "max": 35,
+        "mean": 35.0,
+        "min": 35,
+        "n": 1,
+        "spread": 0,
+        "stdev": 0.0
+      },
+      "runs": 1,
+      "scored": 1
+    },
+    {
+      "brand": "A.P.C.",
+      "ethics": {
+        "max": 38,
+        "mean": 38.0,
+        "min": 38,
+        "n": 1,
+        "spread": 0,
+        "stdev": 0.0
+      },
+      "fallback_rate": 0.0,
+      "fallbacks": 0,
+      "latency_s": 22.0,
+      "ownership": {
+        "max": 30,
+        "mean": 30.0,
+        "min": 30,
+        "n": 1,
+        "spread": 0,
+        "stdev": 0.0
+      },
+      "runs": 1,
+      "scored": 1
+    },
+    {
+      "brand": "Our Legacy",
+      "ethics": {
+        "max": 42,
+        "mean": 42.0,
+        "min": 42,
+        "n": 1,
+        "spread": 0,
+        "stdev": 0.0
+      },
+      "fallback_rate": 0.0,
+      "fallbacks": 0,
+      "latency_s": 17.6,
+      "ownership": {
+        "max": 35,
+        "mean": 35.0,
+        "min": 35,
+        "n": 1,
+        "spread": 0,
+        "stdev": 0.0
+      },
+      "runs": 1,
+      "scored": 1
+    },
+    {
+      "brand": "Stussy",
+      "ethics": {
+        "max": 22,
+        "mean": 22.0,
+        "min": 22,
+        "n": 1,
+        "spread": 0,
+        "stdev": 0.0
+      },
+      "fallback_rate": 0.0,
+      "fallbacks": 0,
+      "latency_s": 13.0,
+      "ownership": {
+        "max": 72,
+        "mean": 72.0,
+        "min": 72,
+        "n": 1,
+        "spread": 0,
+        "stdev": 0.0
+      },
+      "runs": 1,
+      "scored": 1
+    },
+    {
+      "brand": "Carhartt WIP",
+      "ethics": {
+        "max": 38,
+        "mean": 38.0,
+        "min": 38,
+        "n": 1,
+        "spread": 0,
+        "stdev": 0.0
+      },
+      "fallback_rate": 0.0,
+      "fallbacks": 0,
+      "latency_s": 18.2,
+      "ownership": {
+        "max": 72,
+        "mean": 72.0,
+        "min": 72,
+        "n": 1,
+        "spread": 0,
+        "stdev": 0.0
+      },
+      "runs": 1,
+      "scored": 1
+    },
+    {
+      "brand": "Norse Projects",
+      "ethics": {
+        "max": 33,
+        "mean": 33.0,
+        "min": 33,
+        "n": 1,
+        "spread": 0,
+        "stdev": 0.0
+      },
+      "fallback_rate": 0.0,
+      "fallbacks": 0,
+      "latency_s": 15.1,
+      "ownership": {
+        "max": 78,
+        "mean": 78.0,
+        "min": 78,
+        "n": 1,
+        "spread": 0,
+        "stdev": 0.0
+      },
+      "runs": 1,
+      "scored": 1
+    },
+    {
+      "brand": "Veja",
+      "ethics": {
+        "max": 80,
+        "mean": 80.0,
+        "min": 80,
+        "n": 1,
+        "spread": 0,
+        "stdev": 0.0
+      },
+      "fallback_rate": 0.0,
+      "fallbacks": 0,
+      "latency_s": 14.6,
+      "ownership": {
+        "max": 90,
+        "mean": 90.0,
+        "min": 90,
+        "n": 1,
+        "spread": 0,
+        "stdev": 0.0
+      },
+      "runs": 1,
+      "scored": 1
+    },
+    {
+      "brand": "Arc'teryx",
+      "ethics": {
+        "max": 62,
+        "mean": 62.0,
+        "min": 62,
+        "n": 1,
+        "spread": 0,
+        "stdev": 0.0
+      },
+      "fallback_rate": 0.0,
+      "fallbacks": 0,
+      "latency_s": 13.4,
+      "ownership": {
+        "max": 22,
+        "mean": 22.0,
+        "min": 22,
+        "n": 1,
+        "spread": 0,
+        "stdev": 0.0
+      },
+      "runs": 1,
+      "scored": 1
+    },
+    {
+      "brand": "Dr. Martens",
+      "ethics": {
+        "max": 38,
+        "mean": 38.0,
+        "min": 38,
+        "n": 1,
+        "spread": 0,
+        "stdev": 0.0
+      },
+      "fallback_rate": 0.0,
+      "fallbacks": 0,
+      "latency_s": 17.2,
+      "ownership": {
+        "max": 25,
+        "mean": 25.0,
+        "min": 25,
+        "n": 1,
+        "spread": 0,
+        "stdev": 0.0
+      },
+      "runs": 1,
+      "scored": 1
+    },
+    {
+      "brand": "Celine",
+      "ethics": {
+        "max": 28,
+        "mean": 28.0,
+        "min": 28,
+        "n": 1,
+        "spread": 0,
+        "stdev": 0.0
+      },
+      "fallback_rate": 0.0,
+      "fallbacks": 0,
+      "latency_s": 17.6,
+      "ownership": {
+        "max": 5,
+        "mean": 5.0,
+        "min": 5,
+        "n": 1,
+        "spread": 0,
+        "stdev": 0.0
+      },
+      "runs": 1,
+      "scored": 1
+    },
+    {
+      "brand": "Bottega Veneta",
+      "ethics": {
+        "max": 52,
+        "mean": 52.0,
+        "min": 52,
+        "n": 1,
+        "spread": 0,
+        "stdev": 0.0
+      },
+      "fallback_rate": 0.0,
+      "fallbacks": 0,
+      "latency_s": 13.6,
+      "ownership": {
+        "max": 15,
+        "mean": 15.0,
+        "min": 15,
+        "n": 1,
+        "spread": 0,
+        "stdev": 0.0
+      },
+      "runs": 1,
+      "scored": 1
+    },
+    {
+      "brand": "Loewe",
+      "ethics": {
+        "max": 42,
+        "mean": 42.0,
+        "min": 42,
+        "n": 1,
+        "spread": 0,
+        "stdev": 0.0
+      },
+      "fallback_rate": 0.0,
+      "fallbacks": 0,
+      "latency_s": 14.8,
+      "ownership": {
+        "max": 10,
+        "mean": 10.0,
+        "min": 10,
+        "n": 1,
+        "spread": 0,
+        "stdev": 0.0
+      },
+      "runs": 1,
+      "scored": 1
+    },
+    {
+      "brand": "Balenciaga",
+      "ethics": {
+        "max": 32,
+        "mean": 32.0,
+        "min": 32,
+        "n": 1,
+        "spread": 0,
+        "stdev": 0.0
+      },
+      "fallback_rate": 0.0,
+      "fallbacks": 0,
+      "latency_s": 13.8,
+      "ownership": {
+        "max": 10,
+        "mean": 10.0,
+        "min": 10,
+        "n": 1,
+        "spread": 0,
+        "stdev": 0.0
+      },
+      "runs": 1,
+      "scored": 1
+    },
+    {
+      "brand": "Jil Sander",
+      "ethics": {
+        "max": 28,
+        "mean": 28.0,
+        "min": 28,
+        "n": 1,
+        "spread": 0,
+        "stdev": 0.0
+      },
+      "fallback_rate": 0.0,
+      "fallbacks": 0,
+      "latency_s": 18.1,
+      "ownership": {
+        "max": 30,
+        "mean": 30.0,
+        "min": 30,
+        "n": 1,
+        "spread": 0,
+        "stdev": 0.0
+      },
+      "runs": 1,
+      "scored": 1
+    },
+    {
+      "brand": "Camiel Fortgens",
+      "ethics": {
+        "max": 55,
+        "mean": 55.0,
+        "min": 55,
+        "n": 1,
+        "spread": 0,
+        "stdev": 0.0
+      },
+      "fallback_rate": 0.0,
+      "fallbacks": 0,
+      "latency_s": 16.5,
+      "ownership": {
+        "max": 85,
+        "mean": 85.0,
+        "min": 85,
+        "n": 1,
+        "spread": 0,
+        "stdev": 0.0
+      },
+      "runs": 1,
+      "scored": 1
+    },
+    {
+      "brand": "Kozaburo",
+      "ethics": {
+        "max": 68,
+        "mean": 68.0,
+        "min": 68,
+        "n": 1,
+        "spread": 0,
+        "stdev": 0.0
+      },
+      "fallback_rate": 0.0,
+      "fallbacks": 0,
+      "latency_s": 16.3,
+      "ownership": {
+        "max": 85,
+        "mean": 85.0,
+        "min": 85,
+        "n": 1,
+        "spread": 0,
+        "stdev": 0.0
+      },
+      "runs": 1,
+      "scored": 1
+    },
+    {
+      "brand": "Taiga Takahashi",
+      "ethics": {
+        "max": 62,
+        "mean": 62.0,
+        "min": 62,
+        "n": 1,
+        "spread": 0,
+        "stdev": 0.0
+      },
+      "fallback_rate": 0.0,
+      "fallbacks": 0,
+      "latency_s": 13.6,
+      "ownership": {
+        "max": 82,
+        "mean": 82.0,
+        "min": 82,
+        "n": 1,
+        "spread": 0,
+        "stdev": 0.0
+      },
+      "runs": 1,
+      "scored": 1
+    },
+    {
+      "brand": "Amomento",
+      "ethics": {
+        "max": 42,
+        "mean": 42.0,
+        "min": 42,
+        "n": 1,
+        "spread": 0,
+        "stdev": 0.0
+      },
+      "fallback_rate": 0.0,
+      "fallbacks": 0,
+      "latency_s": 17.8,
+      "ownership": {
+        "max": 82,
+        "mean": 82.0,
+        "min": 82,
+        "n": 1,
+        "spread": 0,
+        "stdev": 0.0
+      },
+      "runs": 1,
+      "scored": 1
+    },
+    {
+      "brand": "Sillage",
+      "ethics": {
+        "max": 45,
+        "mean": 45.0,
+        "min": 45,
+        "n": 1,
+        "spread": 0,
+        "stdev": 0.0
+      },
+      "fallback_rate": 0.0,
+      "fallbacks": 0,
+      "latency_s": 16.0,
+      "ownership": {
+        "max": 72,
+        "mean": 72.0,
+        "min": 72,
+        "n": 1,
+        "spread": 0,
+        "stdev": 0.0
+      },
+      "runs": 1,
+      "scored": 1
+    }
+  ],
+  "environment": {
+    "argv": "/Users/nicholassukhdeo/Downloads/good_clothes/backend/evals/run_variance.py --n 1",
+    "python": "3.14.6"
+  },
+  "fallback_rate": 0.0,
+  "median_spread": 0.0,
+  "recorded_at": "2026-10-23T002055Z",
+  "runs_per_brand": 1
+}
