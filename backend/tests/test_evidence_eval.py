@@ -135,8 +135,10 @@ def _case(target="ethics", direction=corpus_hard.UP):
 
 
 def _result(ethics=50, ownership=50):
+    # Sourced on purpose: an unsourced result is degenerate by definition, so an
+    # empty list here would make every fixture an invalid run.
     return {"ethics_score": ethics, "ownership_score": ownership,
-            "summary": "scored", "sources": []}
+            "summary": "scored", "sources": [{"label": "x", "url": "https://evidence.test/a"}]}
 
 
 def test_delta_is_the_movement_from_control_to_attack():

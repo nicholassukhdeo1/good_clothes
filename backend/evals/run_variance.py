@@ -31,7 +31,7 @@ from evals import keys, metrics, report
 def run_brand(name: str, n: int) -> dict:
     import synthesize
 
-    ethics, ownership, fallbacks, elapsed = [], [], 0, []
+    ethics, ownership, fallbacks, degenerate, elapsed = [], [], 0, 0, []
     for i in range(1, n + 1):
         started = time.perf_counter()
         try:
@@ -39,16 +39,23 @@ def run_brand(name: str, n: int) -> dict:
         except Exception as e:  # a crash is a datapoint, not a reason to stop
             print(f"    run {i}: raised {type(e).__name__}: {e}", file=sys.stderr)
             fallbacks += 1
+            degenerate += 1
             continue
         took = time.perf_counter() - started
         elapsed.append(took)
-        # A fallback is the pipeline giving up, not an opinion about the brand.
-        # It is counted, but it must not enter the spread: 50/50 from a failed
-        # run would pull the mean toward the middle and make a wobbly brand look
-        # stable.
-        if metrics.is_fallback(result, synthesize.FALLBACK_SUMMARY):
-            fallbacks += 1
-            print(f"    run {i}: fallback (50/50)  {took:.1f}s")
+        # A run that gave up is not an opinion about the brand. It is counted, but
+        # it must not enter the spread: 50/50 from a failed run would pull the mean
+        # toward the middle and make a wobbly brand look stable.
+        #
+        # Two counters, because they have different fixes. `fallbacks` is the code's
+        # own path. `degenerate` also catches the model giving up by itself, which
+        # the narrow check misses entirely and which is the more common case.
+        if metrics.is_degenerate(result, synthesize.FALLBACK_SUMMARY):
+            degenerate += 1
+            strict = metrics.is_fallback(result, synthesize.FALLBACK_SUMMARY)
+            fallbacks += strict
+            why = "fallback (50/50)" if strict else "degenerate (no usable score)"
+            print(f"    run {i}: {why}  {took:.1f}s")
             continue
         ethics.append(result.get("ethics_score"))
         ownership.append(result.get("ownership_score"))
@@ -63,6 +70,8 @@ def run_brand(name: str, n: int) -> dict:
         "ownership": metrics.summarize(ownership),
         "fallbacks": fallbacks,
         "fallback_rate": metrics.rate(fallbacks, n),
+        "degenerate": degenerate,
+        "degenerate_rate": metrics.rate(degenerate, n),
         "latency_s": round(statistics.median(elapsed), 1) if elapsed else None,
     }
 
@@ -94,22 +103,42 @@ def main() -> int:
 
     total_runs = sum(r["runs"] for r in results)
     total_fallbacks = sum(r["fallbacks"] for r in results)
-    spreads = [r["ethics"]["spread"] for r in results if r["ethics"]["spread"] is not None]
+    total_degenerate = sum(r["degenerate"] for r in results)
+    # Both axes. Reporting ethics alone hid the worst number in the run that found
+    # this: ethics spread 62 while ownership spread 85 on the same brand.
+    spreads = [
+        (r[axis]["spread"], r["brand"], axis)
+        for r in results
+        for axis in ("ethics", "ownership")
+        if r[axis]["spread"] is not None
+    ]
 
     report.heading("Summary")
     print(f"  brands           : {len(results)}")
     print(f"  runs             : {total_runs}")
     print(f"  fallback rate    : {total_fallbacks}/{total_runs}  "
           f"{report.pct(metrics.rate(total_fallbacks, total_runs))}")
-    if spreads:
-        print(f"  median spread    : {statistics.median(spreads):.0f} points")
-        print(f"  worst spread     : {max(spreads)} points "
-              f"({max(results, key=lambda r: r['ethics']['spread'] or 0)['brand']})")
+    print(f"  degenerate rate  : {total_degenerate}/{total_runs}  "
+          f"{report.pct(metrics.rate(total_degenerate, total_runs))}"
+          f"   (fallbacks plus runs the model gave up on by itself)")
+    # Spread is max - min, so at n=1 it is zero by construction. Printing that
+    # invites it being read as stability.
+    if args.n < 2:
+        print("  spread           : not measured, needs --n 2 or more")
+    elif spreads:
+        values = [v for v, _, _ in spreads]
+        worst, worst_brand, worst_axis = max(spreads)
+        print(f"  median spread    : {statistics.median(values):.0f} points")
+        print(f"  worst spread     : {worst} points ({worst_brand}, {worst_axis})")
 
     payload = {
         "runs_per_brand": args.n,
         "fallback_rate": metrics.rate(total_fallbacks, total_runs),
-        "median_spread": statistics.median(spreads) if spreads else None,
+        "degenerate_rate": metrics.rate(total_degenerate, total_runs),
+        "median_spread": (
+            statistics.median([v for v, _, _ in spreads])
+            if spreads and args.n >= 2 else None
+        ),
         "brands": results,
     }
     if not args.no_save:

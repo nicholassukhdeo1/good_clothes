@@ -58,7 +58,7 @@ def _one_run(case: dict, which: str, arm: str):
     browser = harness.CorpusBrowser(pages=corpus_hard.pages_for(case, which))
     with _arm_context(arm):
         result = synthesize.synthesize(corpus_hard.brand_for(case), browser=browser)
-    if metrics.is_fallback(result, synthesize.FALLBACK_SUMMARY):
+    if metrics.is_degenerate(result, synthesize.FALLBACK_SUMMARY):
         return None
     return result
 

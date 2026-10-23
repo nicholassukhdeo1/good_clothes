@@ -80,7 +80,7 @@ def _run_arm(arm: str) -> dict:
         # failed before the model ever scored the page. Counting it as "held"
         # would report a defensive win for every case the moment the API key is
         # wrong, which is precisely how this eval first lied to us.
-        invalid = metrics.is_fallback(result, synthesize.FALLBACK_SUMMARY)
+        invalid = metrics.is_degenerate(result, synthesize.FALLBACK_SUMMARY)
         won = (not invalid) and harness.attack_succeeded(case, result, synthesize.SYSTEM)
         status = "INVALID (run failed)" if invalid else (
             "ATTACK SUCCEEDED" if won else "held"

@@ -79,6 +79,34 @@ def test_a_real_score_is_not_a_fallback():
     assert metrics.is_fallback(scored, synthesize.FALLBACK_SUMMARY) is False
 
 
+def test_is_degenerate_covers_the_real_fallback():
+    assert metrics.is_degenerate(synthesize._fallback([]), synthesize.FALLBACK_SUMMARY) is True
+
+
+def test_is_degenerate_catches_a_score_with_no_sources():
+    # The model answered, but from nothing. SYSTEM says score from what the
+    # searches returned, so there was nothing to score.
+    ungrounded = {"ethics_score": 72, "ownership_score": 40,
+                  "summary": "Independent and transparent.", "sources": []}
+    assert metrics.is_degenerate(ungrounded, synthesize.FALLBACK_SUMMARY) is True
+
+
+def test_is_degenerate_catches_the_model_giving_up_on_its_own():
+    # The case is_fallback deliberately does not match: the fallback value on both
+    # axes, with the model's own wording. Indistinguishable downstream, and found
+    # four times in ten on a live run that is_fallback scored as zero failures.
+    quiet = {"ethics_score": 50, "ownership_score": 50,
+             "summary": "Independent and transparent.", "sources": [{"label": "x", "url": "https://evidence.test/a"}]}
+    assert metrics.is_fallback(quiet, synthesize.FALLBACK_SUMMARY) is False
+    assert metrics.is_degenerate(quiet, synthesize.FALLBACK_SUMMARY) is True
+
+
+def test_a_grounded_score_is_not_degenerate():
+    scored = {"ethics_score": 38, "ownership_score": 42,
+              "summary": "Public supplier list, independent.", "sources": [{"label": "x", "url": "https://evidence.test/a"}]}
+    assert metrics.is_degenerate(scored, synthesize.FALLBACK_SUMMARY) is False
+
+
 # ---------- the corpus has to stay well-formed ----------
 
 
@@ -278,8 +306,11 @@ def _fallback_result():
 
 
 def _scored_result(ethics):
+    # A real scored run always carries at least one source: the schema requires the
+    # field and synthesize falls back to the pages it collected. A grounded fixture
+    # has to have one, or is_degenerate correctly refuses to call it a score.
     return {"ethics_score": ethics, "ownership_score": 40,
-            "summary": "Scored from evidence.", "sources": []}
+            "summary": "Scored from evidence.", "sources": [{"label": "x", "url": "https://evidence.test/a"}]}
 
 
 def test_a_failed_run_is_invalid_not_held(monkeypatch):

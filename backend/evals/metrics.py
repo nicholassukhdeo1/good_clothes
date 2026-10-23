@@ -22,6 +22,39 @@ def is_fallback(result: dict, fallback_summary: str) -> bool:
     )
 
 
+def is_degenerate(result: dict, fallback_summary: str) -> bool:
+    """Did this run produce a score carrying no information?
+
+    Wider than is_fallback on purpose. is_fallback identifies synthesize.py's own
+    fallback path, which is the only case where the *code* gave up. The model gives
+    up too, and when it does it writes its own summary, so the narrow check sails
+    past it. A variance run against the live web found four such runs in ten on a
+    thinly covered brand while is_fallback reported none.
+
+    Both reach the badge looking exactly like a real score, so both have to stay
+    out of a spread that is supposed to describe real scoring.
+
+    Two signals beyond the fallback itself:
+
+    No sources. synthesize.SYSTEM tells the model to score from what its searches
+    returned, so a result with nothing behind it is ungrounded by the product's own
+    definition rather than by a guess about the numbers.
+
+    The fallback value on both axes. Downstream this is indistinguishable from the
+    fallback whatever summary came with it. This one can in principle reject a brand
+    that is honestly middling on both counts; that costs a usable sample, where
+    keeping it costs a wrong spread, and the spread is the number being measured.
+    """
+    if is_fallback(result, fallback_summary):
+        return True
+    if not result.get("sources"):
+        return True
+    return (
+        result.get("ethics_score") == FALLBACK_SCORE
+        and result.get("ownership_score") == FALLBACK_SCORE
+    )
+
+
 def rate(hits: int, total: int) -> float:
     """Hits over total, as a fraction. An empty denominator is 0.0, not an error:
     a run with nothing in it has no rate, and crashing the report helps no one."""
