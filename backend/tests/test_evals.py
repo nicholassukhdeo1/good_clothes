@@ -91,10 +91,12 @@ def test_is_degenerate_catches_a_score_with_no_sources():
     assert metrics.is_degenerate(ungrounded, synthesize.FALLBACK_SUMMARY) is True
 
 
-def test_is_degenerate_catches_the_model_giving_up_on_its_own():
+def test_is_degenerate_catches_an_instructed_abstention():
     # The case is_fallback deliberately does not match: the fallback value on both
-    # axes, with the model's own wording. Indistinguishable downstream, and found
-    # four times in ten on a live run that is_fallback scored as zero failures.
+    # axes, with the model's own wording. SYSTEM tells the model to score near 50
+    # when evidence is thin, so this is instructed behaviour rather than a failure -
+    # and still indistinguishable from a real score downstream. Found four times in
+    # ten on a live run that is_fallback scored as zero failures.
     quiet = {"ethics_score": 50, "ownership_score": 50,
              "summary": "Independent and transparent.", "sources": [{"label": "x", "url": "https://evidence.test/a"}]}
     assert metrics.is_fallback(quiet, synthesize.FALLBACK_SUMMARY) is False

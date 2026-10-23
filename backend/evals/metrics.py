@@ -26,10 +26,15 @@ def is_degenerate(result: dict, fallback_summary: str) -> bool:
     """Did this run produce a score carrying no information?
 
     Wider than is_fallback on purpose. is_fallback identifies synthesize.py's own
-    fallback path, which is the only case where the *code* gave up. The model gives
-    up too, and when it does it writes its own summary, so the narrow check sails
-    past it. A variance run against the live web found four such runs in ten on a
-    thinly covered brand while is_fallback reported none.
+    fallback path, which is the only case where the *code* gave up. The model also
+    abstains, and it is told to: SYSTEM says to score near 50 when the evidence is
+    thin or absent. It writes its own summary when it does, so the narrow check
+    sails past it. A variance run against the live web found four such runs in ten
+    on a thinly covered brand while is_fallback reported none.
+
+    So an abstention is correct behaviour, not a malfunction. It is still not a
+    score of the brand, which is why it has to be counted and kept out of a spread
+    that is meant to describe real scoring.
 
     Both reach the badge looking exactly like a real score, so both have to stay
     out of a spread that is supposed to describe real scoring.

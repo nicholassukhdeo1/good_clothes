@@ -43,13 +43,14 @@ def run_brand(name: str, n: int) -> dict:
             continue
         took = time.perf_counter() - started
         elapsed.append(took)
-        # A run that gave up is not an opinion about the brand. It is counted, but
-        # it must not enter the spread: 50/50 from a failed run would pull the mean
+        # A run that gave up or abstained is not an opinion about the brand. It is
+        # counted, but must not enter the spread: 50/50 from such a run would pull
         # toward the middle and make a wobbly brand look stable.
         #
         # Two counters, because they have different fixes. `fallbacks` is the code's
-        # own path. `degenerate` also catches the model giving up by itself, which
-        # the narrow check misses entirely and which is the more common case.
+        # own path. `degenerate` also catches the model abstaining, which SYSTEM
+        # tells it to do when evidence is thin and which the narrow check misses
+        # entirely. That is correct behaviour and still not a score of the brand.
         if metrics.is_degenerate(result, synthesize.FALLBACK_SUMMARY):
             degenerate += 1
             strict = metrics.is_fallback(result, synthesize.FALLBACK_SUMMARY)
@@ -120,7 +121,7 @@ def main() -> int:
           f"{report.pct(metrics.rate(total_fallbacks, total_runs))}")
     print(f"  degenerate rate  : {total_degenerate}/{total_runs}  "
           f"{report.pct(metrics.rate(total_degenerate, total_runs))}"
-          f"   (fallbacks plus runs the model gave up on by itself)")
+          f"   (fallbacks plus abstentions, which are not scores of the brand)")
     # Spread is max - min, so at n=1 it is zero by construction. Printing that
     # invites it being read as stability.
     if args.n < 2:
